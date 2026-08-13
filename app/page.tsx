@@ -24,15 +24,21 @@ const primarySections = [
   },
 ];
 
-function isToday(deadline: LotteryItem, now: Date) {
+const tokyoDateFormatter = new Intl.DateTimeFormat("en-CA", {
+  timeZone: "Asia/Tokyo",
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+});
+
+function getTokyoDateKey(date: Date) {
+  return tokyoDateFormatter.format(date);
+}
+
+function isToday(deadline: LotteryItem, today: string) {
   if (deadline.deadlineAt) {
     const date = new Date(deadline.deadlineAt);
-    return (
-      !Number.isNaN(date.getTime()) &&
-      date.getFullYear() === now.getFullYear() &&
-      date.getMonth() === now.getMonth() &&
-      date.getDate() === now.getDate()
-    );
+    return !Number.isNaN(date.getTime()) && getTokyoDateKey(date) === today;
   }
 
   return /本日|今日/.test(deadline.deadline);
@@ -41,13 +47,13 @@ function isToday(deadline: LotteryItem, now: Date) {
 export default async function HomePage() {
   const contexts = await Promise.all(genres.map((genre) => getGenreContext(genre)));
   const data = contexts.flatMap((context) => (context ? [context.data] : []));
-  const now = new Date();
+  const today = getTokyoDateKey(new Date());
 
   const metrics = [
     {
       label: "今日締切の抽選",
       value: data.reduce(
-        (count, genre) => count + genre.lottery.filter((item) => isToday(item, now)).length,
+        (count, genre) => count + genre.lottery.filter((item) => isToday(item, today)).length,
         0,
       ),
       unit: "件",
