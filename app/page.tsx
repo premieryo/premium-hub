@@ -93,7 +93,16 @@ export default async function HomePage() {
 
         <section className="py-10 sm:py-14 lg:grid lg:grid-cols-[1.35fr_0.65fr] lg:items-end lg:gap-12 lg:py-20">
           <div>
-            <p className="text-sm font-bold tracking-[0.2em] text-blue-400">プレミア速報</p>
+            <p
+              className="text-lg font-black tracking-[0.2em] text-blue-400 sm:text-xl"
+              style={{
+                fontFamily:
+                  '"Hiragino Kaku Gothic ProN", "Yu Gothic", "YuGothic", Meiryo, sans-serif',
+                WebkitTextStroke: "0.35px currentColor",
+              }}
+            >
+              プレミア速報
+            </p>
             <h1 className="mt-4 text-[2.7rem] font-black leading-[1.06] tracking-tight sm:text-6xl lg:text-7xl">
               当たった後、
               <br />
