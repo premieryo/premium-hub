@@ -3,7 +3,7 @@ import type { GenreData } from "@/data/genre-data";
 import { genres, sortProductsByReleaseDate, type Genre } from "@/data/types";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 import type { AdminResource } from "./admin-data";
 
 export function isGenre(value: string): value is Genre {
@@ -24,7 +24,7 @@ export async function getGenreContext(value: string) {
   let ranking: GenreData["ranking"];
 
   try {
-    const supabase = await createClient();
+    const supabase = createPublicClient();
     const resources: AdminResource[] = ["products", "lottery", "restock", "ranking"];
     const results = await Promise.all(resources.map(async (resource) => {
       const { data, error } = await supabase.from("content_items").select("data").eq("genre", value).eq("resource", resource).order("updated_at", { ascending: false });
