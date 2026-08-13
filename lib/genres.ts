@@ -1,6 +1,12 @@
 import { genreConfigs } from "@/data/genre-config";
 import type { GenreData } from "@/data/genre-data";
-import { genres, sortProductsByReleaseDate, type Genre } from "@/data/types";
+import {
+  genres,
+  sortProductsByReleaseDate,
+  type Genre,
+  type LotteryItem,
+  type RestockItem,
+} from "@/data/types";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { createPublicClient } from "@/lib/supabase/public";
@@ -13,6 +19,68 @@ export function isGenre(value: string): value is Genre {
 async function readGenreJson<T>(genre: Genre, filename: string): Promise<T> {
   const path = join(process.cwd(), "data", genre, filename);
   return JSON.parse(await readFile(path, "utf8")) as T;
+}
+
+const tokyoDatePartsFormatter = new Intl.DateTimeFormat("en-US", {
+  timeZone: "Asia/Tokyo",
+  year: "numeric",
+  month: "numeric",
+  day: "numeric",
+});
+
+function getTokyoDateParts(date: Date) {
+  const parts = Object.fromEntries(
+    tokyoDatePartsFormatter
+      .formatToParts(date)
+      .filter((part) => part.type !== "literal")
+      .map((part) => [part.type, Number(part.value)]),
+  );
+  return { year: parts.year, month: parts.month, day: parts.day };
+}
+
+function getDateNumber({ year, month, day }: { year: number; month: number; day: number }) {
+  return year * 10_000 + month * 100 + day;
+}
+
+function parseJapaneseDate(value: string, now: Date) {
+  const match = value.match(/(\d{1,2})月(\d{1,2})日(?:\s*(\d{1,2}):(\d{2}))?/);
+  if (!match) return null;
+
+  const { year, month: currentMonth } = getTokyoDateParts(now);
+  const month = Number(match[1]);
+  const day = Number(match[2]);
+  const hour = match[3] === undefined ? 23 : Number(match[3]);
+  const minute = match[4] === undefined ? 59 : Number(match[4]);
+  if (month < 1 || month > 12 || day < 1 || day > 31 || hour > 23 || minute > 59) return null;
+
+  let resolvedYear = year;
+  if (currentMonth === 12 && month === 1) resolvedYear += 1;
+  if (currentMonth === 1 && month === 12) resolvedYear -= 1;
+
+  const date = new Date(Date.UTC(resolvedYear, month - 1, day, hour - 9, minute));
+  const parsed = getTokyoDateParts(date);
+  if (parsed.year !== resolvedYear || parsed.month !== month || parsed.day !== day) return null;
+  return date;
+}
+
+function filterFallbackLottery(items: LotteryItem[], now: Date) {
+  return items.filter((item) => {
+    if (item.deadlineAt) {
+      const deadline = new Date(item.deadlineAt);
+      return Number.isNaN(deadline.getTime()) || deadline.getTime() >= now.getTime();
+    }
+    const deadline = parseJapaneseDate(item.deadline, now);
+    return deadline === null || deadline.getTime() >= now.getTime();
+  });
+}
+
+function filterFallbackRestock(items: RestockItem[], now: Date) {
+  const today = getDateNumber(getTokyoDateParts(now));
+  return items.filter((item) => {
+    const restock = item.restockAt ? new Date(item.restockAt) : parseJapaneseDate(item.date, now);
+    if (!restock || Number.isNaN(restock.getTime())) return true;
+    return getDateNumber(getTokyoDateParts(restock)) >= today;
+  });
 }
 
 export async function getGenreContext(value: string) {
@@ -40,6 +108,9 @@ export async function getGenreContext(value: string) {
       readGenreJson<GenreData["restock"]>(value, "restock.json"),
       readGenreJson<GenreData["ranking"]>(value, "ranking.json"),
     ]);
+    const now = new Date();
+    lottery = filterFallbackLottery(lottery, now);
+    restock = filterFallbackRestock(restock, now);
   }
   const priceHistory = await readGenreJson<GenreData["priceHistory"]>(value, "price-history.json");
 
