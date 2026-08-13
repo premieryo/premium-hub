@@ -18,6 +18,7 @@ async function requestContext(context: Context) {
 }
 
 function revalidate(genre: string, resource: string) {
+  revalidatePath("/");
   revalidatePath(`/${genre}`);
   revalidatePath(`/${genre}/${resource}`);
 }
