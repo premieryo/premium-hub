@@ -1,0 +1,12 @@
+[
+  {
+    "id": "pokemon-center-box-restock",
+    "genre": "pokemon",
+    "shop": "ポケモンセンターオンライン",
+    "product": "ポケモンカードBOX 再販",
+    "date": "8月10日 10:00予定",
+    "status": "再販予定",
+    "icon": "📦",
+    "href": "/pokemon/restock"
+  }
+]

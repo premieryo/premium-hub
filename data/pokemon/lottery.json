@@ -1,0 +1,32 @@
+[
+  {
+    "id": "pokemon-center-new-box",
+    "genre": "pokemon",
+    "shop": "ポケモンセンターオンライン",
+    "product": "新弾ポケモンカードBOX",
+    "deadline": "8月5日 23:59まで",
+    "status": "受付中",
+    "icon": "📦",
+    "href": "/pokemon/lottery"
+  },
+  {
+    "id": "yodobashi-pokemon-lottery",
+    "genre": "pokemon",
+    "shop": "ヨドバシカメラ",
+    "product": "ポケモンカード抽選販売",
+    "deadline": "8月7日 10:59まで",
+    "status": "受付中",
+    "icon": "🎴",
+    "href": "/pokemon/lottery"
+  },
+  {
+    "id": "biccamera-pokemon-reservation",
+    "genre": "pokemon",
+    "shop": "ビックカメラ",
+    "product": "ポケモンカード予約抽選",
+    "deadline": "受付開始待ち",
+    "status": "近日開始",
+    "icon": "⭐",
+    "href": "/pokemon/lottery"
+  }
+]

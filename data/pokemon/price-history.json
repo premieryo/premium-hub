@@ -1,0 +1,8 @@
+[
+  { "productId": "rocket-glory-box", "genre": "pokemon", "prices": [{ "price": 28500, "shop": "お宝あっと町田Yahoo!ショップ", "url": "https://store.shopping.yahoo.co.jp/otakara-machida/5120250404301.html", "capturedAt": "2026-08-05T17:45:23.847Z" }] },
+  { "productId": "black-bolt-box", "genre": "pokemon", "prices": [{ "price": 1180, "shop": "スピード発送 ホリック", "url": "https://store.shopping.yahoo.co.jp/horikku/2buuu1o801.html", "capturedAt": "2026-08-05T17:45:25.027Z" }] },
+  { "productId": "white-flare-box", "genre": "pokemon", "prices": [{ "price": 1180, "shop": "スピード発送 ホリック", "url": "https://store.shopping.yahoo.co.jp/horikku/2buuu1o801.html", "capturedAt": "2026-08-05T17:45:26.233Z" }] },
+  { "productId": "terastal-festival-box", "genre": "pokemon", "prices": [{ "price": 22500, "shop": "お宝あっと町田Yahoo!ショップ", "url": "https://store.shopping.yahoo.co.jp/otakara-machida/2-0320241206301.html", "capturedAt": "2026-08-05T17:45:27.403Z" }] },
+  { "productId": "super-electric-breaker-box", "genre": "pokemon", "prices": [{ "price": 38000, "shop": "お宝あっと町田Yahoo!ショップ", "url": "https://store.shopping.yahoo.co.jp/otakara-machida/2-5120250110301.html", "capturedAt": "2026-08-05T17:45:28.564Z" }] },
+  { "productId": "hot-wind-arena-box", "genre": "pokemon", "prices": [{ "price": 7000, "shop": "KANYUGI", "url": "https://store.shopping.yahoo.co.jp/kanyugi/sv9a.html", "capturedAt": "2026-08-05T17:45:29.714Z" }] }
+]

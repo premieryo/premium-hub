@@ -1,0 +1,74 @@
+[
+  {
+    "id": "rocket-glory-box",
+    "name": "ロケット団の栄光 BOX",
+    "genre": "pokemon",
+    "type": "box",
+    "searchWord": "ロケット団の栄光 BOX",
+    "releaseDate": "2025-04-18",
+    "shop": "お宝あっと町田Yahoo!ショップ",
+    "marketPrice": 28500,
+    "url": "https://store.shopping.yahoo.co.jp/otakara-machida/5120250404301.html",
+    "updatedAt": "2026-08-05T17:45:23.847Z"
+  },
+  {
+    "id": "black-bolt-box",
+    "name": "ブラックボルト BOX",
+    "genre": "pokemon",
+    "type": "box",
+    "searchWord": "ブラックボルト BOX",
+    "releaseDate": "2025-06-06",
+    "shop": "スピード発送 ホリック",
+    "marketPrice": 1180,
+    "url": "https://store.shopping.yahoo.co.jp/horikku/2buuu1o801.html",
+    "updatedAt": "2026-08-05T17:45:25.027Z"
+  },
+  {
+    "id": "white-flare-box",
+    "name": "ホワイトフレア BOX",
+    "genre": "pokemon",
+    "type": "box",
+    "searchWord": "ホワイトフレア BOX",
+    "releaseDate": "2025-06-06",
+    "shop": "スピード発送 ホリック",
+    "marketPrice": 1180,
+    "url": "https://store.shopping.yahoo.co.jp/horikku/2buuu1o801.html",
+    "updatedAt": "2026-08-05T17:45:26.233Z"
+  },
+  {
+    "id": "terastal-festival-box",
+    "name": "テラスタルフェス BOX",
+    "genre": "pokemon",
+    "type": "box",
+    "searchWord": "テラスタルフェス BOX",
+    "releaseDate": "2024-12-06",
+    "shop": "お宝あっと町田Yahoo!ショップ",
+    "marketPrice": 22500,
+    "url": "https://store.shopping.yahoo.co.jp/otakara-machida/2-0320241206301.html",
+    "updatedAt": "2026-08-05T17:45:27.403Z"
+  },
+  {
+    "id": "super-electric-breaker-box",
+    "name": "超電ブレイカー BOX",
+    "genre": "pokemon",
+    "type": "box",
+    "searchWord": "超電ブレイカー BOX",
+    "releaseDate": "2024-10-18",
+    "shop": "お宝あっと町田Yahoo!ショップ",
+    "marketPrice": 38000,
+    "url": "https://store.shopping.yahoo.co.jp/otakara-machida/2-5120250110301.html",
+    "updatedAt": "2026-08-05T17:45:28.564Z"
+  },
+  {
+    "id": "hot-wind-arena-box",
+    "name": "熱風のアリーナ BOX",
+    "genre": "pokemon",
+    "type": "box",
+    "searchWord": "熱風のアリーナ BOX",
+    "releaseDate": "2025-03-14",
+    "shop": "KANYUGI",
+    "marketPrice": 7000,
+    "url": "https://store.shopping.yahoo.co.jp/kanyugi/sv9a.html",
+    "updatedAt": "2026-08-05T17:45:29.714Z"
+  }
+]
