@@ -1,7 +1,14 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { genreConfigs } from "@/data/genre-config";
 import { genres, type LotteryItem } from "@/data/types";
 import { getGenreContext } from "@/lib/genres";
+
+export const metadata: Metadata = {
+  alternates: {
+    canonical: "/",
+  },
+};
 
 const primarySections = [
   {

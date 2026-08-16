@@ -13,6 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://premiumsokuho.jp"),
   title: "プレミア速報",
   description: "プレミア商品の抽選・再販・相場・売却情報をまとめて紹介します。",
 };
