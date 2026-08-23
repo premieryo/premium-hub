@@ -17,6 +17,7 @@ export type Product = {
   type: ProductType;
   searchWord: string;
   releaseDate: string;
+  priceTrackingEnabled?: boolean;
   shop?: string;
   marketPrice?: number;
   url?: string;
@@ -37,6 +38,8 @@ export type LotteryItem = InformationItem & {
   deadline: string;
   deadlineAt?: string;
   officialUrl?: string;
+  productId?: string;
+  observedAt?: string;
 };
 
 export type RestockItem = InformationItem & {

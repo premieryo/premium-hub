@@ -1,33 +1,33 @@
-import {
-  appendFileSync,
-  mkdirSync,
-  readFileSync,
-  renameSync,
-  writeFileSync,
-} from "node:fs";
-import { dirname, join } from "node:path";
-import type {
-  Genre,
-  PriceSnapshot,
-  Product,
-  ProductPriceHistory,
-  RankingItem,
-} from "../data/types";
-import { searchYahooItems } from "../lib/api/yahoo";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import type { Genre, Product, RankingItem } from "../data/types";
+import { searchYahooItems, type YahooItem } from "../lib/api/yahoo";
+import { selectPriceTrackingProducts } from "../lib/price-tracking";
 
 const REQUEST_INTERVAL_MS = 1_100;
 const REQUEST_TIMEOUT_MS = 10_000;
-const MAX_HISTORY_PER_PRODUCT = 365;
+const PRICE_SOURCE = "yahoo";
 
-function readJson<T>(path: string): T {
-  return JSON.parse(readFileSync(path, "utf8")) as T;
-}
+type ContentItemRow<T> = { item_id: string; data: T };
+type PriceUpdateOptions = { dryRun?: boolean };
 
-function writeJsonAtomic(path: string, value: unknown) {
-  const temporaryPath = `${path}.tmp`;
-  writeFileSync(temporaryPath, `${JSON.stringify(value, null, 2)}\n`, "utf8");
-  renameSync(temporaryPath, path);
-}
+type PlannedPriceUpdate = {
+  product: Product;
+  selected: YahooItem;
+  fetchedAt: string;
+  previousPrice: number;
+  changeAmount: number;
+  changeRate: number;
+  productData: Product;
+  rankingData: RankingItem;
+};
+
+export type PriceUpdateSummary = {
+  genre: Genre;
+  dryRun: boolean;
+  total: number;
+  succeeded: number;
+  failed: number;
+};
 
 function wait(milliseconds: number) {
   return new Promise((resolve) => setTimeout(resolve, milliseconds));
@@ -37,14 +37,83 @@ function errorMessage(error: unknown) {
   return error instanceof Error ? error.message : String(error);
 }
 
-function logError(genre: Genre, product: Product, error: unknown) {
-  const logPath = join(process.cwd(), "logs", "price-update-errors.log");
-  mkdirSync(dirname(logPath), { recursive: true });
-  appendFileSync(
-    logPath,
-    `${new Date().toISOString()}\t${genre}\t${product.id}\t${errorMessage(error)}\n`,
-    "utf8"
+function createAdminClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const secretKey = process.env.SUPABASE_SECRET_KEY;
+  const publicKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+
+  if (!url || !secretKey) {
+    throw new Error("NEXT_PUBLIC_SUPABASE_URLとSUPABASE_SECRET_KEYが必要です。");
+  }
+  if (secretKey.startsWith("sb_publishable_") || secretKey === publicKey) {
+    throw new Error("SUPABASE_SECRET_KEYにはSecret keyを設定してください。");
+  }
+
+  return createClient(url, secretKey, {
+    auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+  });
+}
+
+function isProduct(value: unknown): value is Product {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+  const product = value as Partial<Product>;
+  return (
+    typeof product.id === "string" &&
+    typeof product.name === "string" &&
+    typeof product.genre === "string" &&
+    typeof product.type === "string" &&
+    typeof product.searchWord === "string" &&
+    typeof product.releaseDate === "string"
   );
+}
+
+async function readProducts(client: SupabaseClient, genre: Genre) {
+  const { data, error } = await client
+    .from("content_items")
+    .select("item_id,data")
+    .eq("genre", genre)
+    .eq("resource", "products")
+    .order("item_id");
+  if (error) throw new Error(`productsの読み込みに失敗しました: ${error.message}`);
+
+  return (data ?? []).map((row) => {
+    if (!isProduct(row.data) || row.item_id !== row.data.id || row.data.genre !== genre) {
+      throw new Error(`[${genre}/${row.item_id}] productsデータの形式が不正です。`);
+    }
+    return row.data;
+  });
+}
+
+async function readRankings(client: SupabaseClient, genre: Genre) {
+  const { data, error } = await client
+    .from("content_items")
+    .select("item_id,data")
+    .eq("genre", genre)
+    .eq("resource", "ranking");
+  if (error) throw new Error(`rankingの読み込みに失敗しました: ${error.message}`);
+
+  return new Map(
+    ((data ?? []) as ContentItemRow<RankingItem>[]).map((row) => [row.item_id, row.data])
+  );
+}
+
+async function readPreviousPrice(
+  client: SupabaseClient,
+  genre: Genre,
+  productId: string,
+  currentPrice: number
+) {
+  const { data, error } = await client
+    .from("price_history")
+    .select("price")
+    .eq("genre", genre)
+    .eq("product_id", productId)
+    .eq("source", PRICE_SOURCE)
+    .order("fetched_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (error) throw new Error(`前回価格の読み込みに失敗しました: ${error.message}`);
+  return typeof data?.price === "number" ? data.price : currentPrice;
 }
 
 function itemIcon(product: Product) {
@@ -54,50 +123,133 @@ function itemIcon(product: Product) {
   return "📦";
 }
 
-function createRankingItem(
+function movementStatus(changeAmount: number, changeRate: number) {
+  const sign = changeAmount > 0 ? "+" : changeAmount < 0 ? "-" : "±";
+  const rateSign = changeRate >= 0 ? "+" : "";
+  return `前回比 ${sign}${Math.abs(changeAmount).toLocaleString()}円 (${rateSign}${changeRate.toFixed(2)}%)`;
+}
+
+function planPriceUpdate(
   genre: Genre,
   product: Product,
-  history: ProductPriceHistory
-): RankingItem | null {
-  const current = history.prices.at(-1);
-  if (!current) return null;
-
-  const previous = history.prices.at(-2) ?? current;
-  const changeAmount = current.price - previous.price;
-  const changeRate = previous.price === 0 ? 0 : (changeAmount / previous.price) * 100;
-  const sign = changeAmount > 0 ? "+" : changeAmount < 0 ? "-" : "±";
-
-  return {
+  existingRanking: RankingItem | undefined,
+  selected: YahooItem,
+  fetchedAt: string,
+  previousPrice: number
+): PlannedPriceUpdate {
+  const changeAmount = selected.price - previousPrice;
+  const rawChangeRate = previousPrice === 0 ? 0 : (changeAmount / previousPrice) * 100;
+  const changeRate = Number(rawChangeRate.toFixed(2));
+  const productData: Product = {
+    ...product,
+    marketPrice: selected.price,
+    shop: selected.seller.name,
+    url: selected.url,
+    updatedAt: fetchedAt,
+  };
+  const rankingData: RankingItem = {
     id: product.id,
     genre,
-    shop: current.shop,
-    product: product.name,
-    price: `${current.price.toLocaleString()}円`,
-    marketPrice: current.price,
-    currentPrice: current.price,
-    previousPrice: previous.price,
+    shop: selected.seller.name,
+    product: existingRanking?.product ?? product.name,
+    status: existingRanking?.status ?? movementStatus(changeAmount, changeRate),
+    icon: existingRanking?.icon ?? itemIcon(product),
+    href: existingRanking?.href ?? `/${genre}/ranking`,
+    price: `${selected.price.toLocaleString()}円`,
+    marketPrice: selected.price,
+    currentPrice: selected.price,
+    previousPrice,
     changeAmount,
-    changeRate: Number(changeRate.toFixed(2)),
-    status: `前回比 ${sign}${Math.abs(changeAmount).toLocaleString()}円 (${changeRate >= 0 ? "+" : ""}${changeRate.toFixed(2)}%)`,
-    icon: itemIcon(product),
-    href: `/${genre}/ranking`,
-    updatedAt: current.capturedAt,
+    changeRate,
+    updatedAt: fetchedAt,
+  };
+
+  return {
+    product,
+    selected,
+    fetchedAt,
+    previousPrice,
+    changeAmount,
+    changeRate,
+    productData,
+    rankingData: existingRanking ? { ...existingRanking, ...rankingData } : rankingData,
   };
 }
 
-export async function updateGenrePrices(genre: Genre) {
-  const dataDirectory = join(process.cwd(), "data", genre);
-  const productsPath = join(dataDirectory, "products.json");
-  const historyPath = join(dataDirectory, "price-history.json");
-  const rankingPath = join(dataDirectory, "ranking.json");
+function logDryRun(plan: PlannedPriceUpdate) {
+  const currentDbPrice = plan.product.marketPrice;
+  const dbDifference =
+    typeof currentDbPrice === "number" ? plan.selected.price - currentDbPrice : null;
 
-  const products = readJson<Product[]>(productsPath);
-  const histories = readJson<ProductPriceHistory[]>(historyPath);
-  const existingRanking = readJson<RankingItem[]>(rankingPath);
-  const updatedProducts: Product[] = [];
-  const successfulProductIds = new Set<string>();
+  console.log(`  [DRY-RUN] ${plan.product.name}`);
+  console.log(`    採用商品: ${plan.selected.name}`);
+  console.log(`    取得価格: ${plan.selected.price.toLocaleString()}円`);
+  console.log(`    ショップ: ${plan.selected.seller.name}`);
+  console.log(`    商品URL: ${plan.selected.url}`);
+  console.log(
+    `    現在DB価格との差: ${dbDifference === null ? "未登録" : `${dbDifference >= 0 ? "+" : ""}${dbDifference.toLocaleString()}円`}`
+  );
+  console.log(`    前回履歴価格: ${plan.previousPrice.toLocaleString()}円`);
+  console.log(`    想定騰落額: ${plan.changeAmount >= 0 ? "+" : ""}${plan.changeAmount.toLocaleString()}円`);
+  console.log(`    想定騰落率: ${plan.changeRate >= 0 ? "+" : ""}${plan.changeRate.toFixed(2)}%`);
+}
 
-  console.log(`\n[${genre}] ${products.length}商品の価格更新を開始します`);
+async function persistPriceUpdate(
+  client: SupabaseClient,
+  genre: Genre,
+  plan: PlannedPriceUpdate
+) {
+  const { error: historyError } = await client.from("price_history").insert({
+    genre,
+    product_id: plan.product.id,
+    price: plan.selected.price,
+    shop: plan.selected.seller.name,
+    product_url: plan.selected.url,
+    source: PRICE_SOURCE,
+    fetched_at: plan.fetchedAt,
+  });
+  if (historyError) throw new Error(`価格履歴の保存に失敗しました: ${historyError.message}`);
+
+  const { error: productError } = await client.from("content_items").upsert(
+    {
+      genre,
+      resource: "products",
+      item_id: plan.product.id,
+      data: plan.productData,
+      updated_at: plan.fetchedAt,
+    },
+    { onConflict: "genre,resource,item_id" }
+  );
+  if (productError) throw new Error(`productsの更新に失敗しました: ${productError.message}`);
+
+  const { error: rankingError } = await client.from("content_items").upsert(
+    {
+      genre,
+      resource: "ranking",
+      item_id: plan.product.id,
+      data: plan.rankingData,
+      updated_at: plan.fetchedAt,
+    },
+    { onConflict: "genre,resource,item_id" }
+  );
+  if (rankingError) throw new Error(`rankingの更新に失敗しました: ${rankingError.message}`);
+}
+
+export async function updateGenrePrices(
+  genre: Genre,
+  options: PriceUpdateOptions = {}
+): Promise<PriceUpdateSummary> {
+  const dryRun = options.dryRun ?? true;
+  const client = createAdminClient();
+  const [allProducts, rankings] = await Promise.all([
+    readProducts(client, genre),
+    readRankings(client, genre),
+  ]);
+  const products = selectPriceTrackingProducts(genre, allProducts);
+  let succeeded = 0;
+
+  console.log(`\n[${genre}] ${allProducts.length}商品中 ${products.length}商品の価格${dryRun ? "確認" : "更新"}を開始します`);
+  console.log(`モード: ${dryRun ? "DRY-RUN（DB書き込みなし）" : "APPLY（DB書き込みあり）"}`);
 
   for (const [index, product] of products.entries()) {
     try {
@@ -106,60 +258,50 @@ export async function updateGenrePrices(genre: Genre) {
         timeoutMs: REQUEST_TIMEOUT_MS,
       });
       const selected = items[0];
-
       if (!selected) throw new Error("条件に一致する本体商品が見つかりませんでした。");
-
-      const capturedAt = new Date().toISOString();
-      const snapshot: PriceSnapshot = {
-        price: selected.price,
-        shop: selected.seller.name,
-        url: selected.url,
-        capturedAt,
-      };
-      const history = histories.find((entry) => entry.productId === product.id);
-
-      if (history) {
-        history.prices = [...history.prices, snapshot].slice(-MAX_HISTORY_PER_PRODUCT);
-      } else {
-        histories.push({ productId: product.id, genre, prices: [snapshot] });
+      if (!Number.isInteger(selected.price) || selected.price <= 0) {
+        throw new Error("取得価格が正の整数ではありません。");
       }
 
-      updatedProducts.push({
-        ...product,
-        shop: selected.seller.name,
-        marketPrice: selected.price,
-        url: selected.url,
-        updatedAt: capturedAt,
-      });
-      successfulProductIds.add(product.id);
-      console.log(`  ✓ ${product.name}: ${selected.price.toLocaleString()}円`);
+      const fetchedAt = new Date().toISOString();
+      const previousPrice = await readPreviousPrice(
+        client,
+        genre,
+        product.id,
+        selected.price
+      );
+      const plan = planPriceUpdate(
+        genre,
+        product,
+        rankings.get(product.id),
+        selected,
+        fetchedAt,
+        previousPrice
+      );
+
+      if (dryRun) {
+        logDryRun(plan);
+      } else {
+        await persistPriceUpdate(client, genre, plan);
+        console.log(`  ✓ ${product.name}: ${selected.price.toLocaleString()}円`);
+      }
+      succeeded += 1;
     } catch (error) {
-      updatedProducts.push(product);
-      logError(genre, product, error);
       console.error(`  ✗ ${product.name}: ${errorMessage(error)}`);
     }
 
     if (index < products.length - 1) await wait(REQUEST_INTERVAL_MS);
   }
 
-  const calculatedRanking = updatedProducts
-    .filter((product) => successfulProductIds.has(product.id))
-    .map((product) => {
-      const history = histories.find((entry) => entry.productId === product.id);
-      return history ? createRankingItem(genre, product, history) : null;
-    })
-    .filter((item): item is RankingItem => item !== null);
-
-  const preservedRanking = existingRanking.filter(
-    (item) => !successfulProductIds.has(item.id)
+  const summary = {
+    genre,
+    dryRun,
+    total: products.length,
+    succeeded,
+    failed: products.length - succeeded,
+  };
+  console.log(
+    `[${genre}] ${dryRun ? "確認" : "更新"}成功 ${summary.succeeded}件 / 失敗 ${summary.failed}件`
   );
-  const ranking = [...calculatedRanking, ...preservedRanking].sort(
-    (a, b) => (b.changeRate ?? Number.NEGATIVE_INFINITY) - (a.changeRate ?? Number.NEGATIVE_INFINITY)
-  );
-
-  writeJsonAtomic(productsPath, updatedProducts);
-  writeJsonAtomic(historyPath, histories);
-  writeJsonAtomic(rankingPath, ranking);
-
-  console.log(`[${genre}] 成功 ${successfulProductIds.size}件 / 失敗 ${products.length - successfulProductIds.size}件`);
+  return summary;
 }

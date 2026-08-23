@@ -2,7 +2,7 @@ import type { Genre } from "@/data/types";
 
 export const adminResources = ["products", "lottery", "restock", "ranking"] as const;
 export type AdminResource = (typeof adminResources)[number];
-export type AdminItem = Record<string, string | number | undefined> & { id: string; genre: Genre };
+export type AdminItem = Record<string, string | number | boolean | undefined> & { id: string; genre: Genre };
 
 export function isAdminResource(value: string): value is AdminResource {
   return adminResources.includes(value as AdminResource);
@@ -11,7 +11,7 @@ export function isAdminResource(value: string): value is AdminResource {
 export type AdminField = {
   name: string;
   label: string;
-  type?: "text" | "number" | "date" | "url" | "select";
+  type?: "text" | "number" | "date" | "datetime" | "url" | "select" | "checkbox" | "product-reference";
   required?: boolean;
   options?: string[];
   placeholder?: string;
@@ -35,6 +35,7 @@ export const adminResourceConfig: Record<AdminResource, { label: string; fields:
       { name: "type", label: "商品タイプ", type: "select", required: true, options: ["box", "card", "figure", "toy", "other"] },
       { name: "searchWord", label: "Yahoo!検索語", required: true },
       { name: "releaseDate", label: "発売日", type: "date", required: true },
+      { name: "priceTrackingEnabled", label: "価格追跡する", type: "checkbox" },
       { name: "shop", label: "ショップ" },
       { name: "marketPrice", label: "現在価格", type: "number" },
       { name: "url", label: "商品URL", type: "url" },
@@ -42,7 +43,7 @@ export const adminResourceConfig: Record<AdminResource, { label: string; fields:
   },
   lottery: {
     label: "抽選情報",
-    fields: [...commonInfoFields, { name: "deadline", label: "応募締切", required: true }, { name: "deadlineAt", label: "締切日時", type: "text", placeholder: "ISO 8601形式" }, { name: "officialUrl", label: "公式URL", type: "url" }],
+    fields: [...commonInfoFields, { name: "productId", label: "商品マスタ", type: "product-reference" }, { name: "observedAt", label: "確認日時", type: "datetime", placeholder: "ISO 8601形式" }, { name: "deadline", label: "応募締切", required: true }, { name: "deadlineAt", label: "締切日時", type: "text", placeholder: "ISO 8601形式" }, { name: "officialUrl", label: "公式URL", type: "url" }],
   },
   restock: {
     label: "再販情報",
@@ -57,11 +58,15 @@ export const adminResourceConfig: Record<AdminResource, { label: string; fields:
 export function validateAdminItem(resource: AdminResource, value: unknown, genre: Genre) {
   if (!value || typeof value !== "object" || Array.isArray(value)) return { error: "入力データが不正です。" };
   const input = value as Record<string, unknown>;
-  const item: Record<string, string | number> = { genre };
+  const item: Record<string, string | number | boolean> = { genre };
 
   for (const field of adminResourceConfig[resource].fields) {
     const raw = input[field.name];
     if (field.required && (raw === undefined || raw === null || String(raw).trim() === "")) return { error: `${field.label}は必須です。` };
+    if (field.type === "checkbox") {
+      item[field.name] = raw === true || raw === "true";
+      continue;
+    }
     if (raw === undefined || raw === null || String(raw).trim() === "") continue;
     if (field.type === "number") {
       const number = Number(raw);
@@ -71,9 +76,10 @@ export function validateAdminItem(resource: AdminResource, value: unknown, genre
       const text = String(raw).trim();
       if (field.name === "id" && !/^[a-z0-9][a-z0-9-]*$/.test(text)) return { error: "IDは半角英小文字・数字・ハイフンで入力してください。" };
       if (field.type === "date" && Number.isNaN(Date.parse(text))) return { error: `${field.label}の日付が不正です。` };
+      if (field.type === "datetime" && Number.isNaN(Date.parse(text))) return { error: `${field.label}は有効なISO 8601日時で入力してください。` };
       if (field.type === "url" && !/^https?:\/\//.test(text)) return { error: `${field.label}はhttp(s) URLで入力してください。` };
       if (field.name === "href" && !text.startsWith("/")) return { error: "リンク先は/から始めてください。" };
-      item[field.name] = text;
+      item[field.name] = field.type === "datetime" ? new Date(text).toISOString() : text;
     }
   }
 

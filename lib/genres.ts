@@ -11,6 +11,7 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { createPublicClient } from "@/lib/supabase/public";
 import type { AdminResource } from "./admin-data";
+import { selectPublicRankingProducts } from "./price-tracking";
 
 export function isGenre(value: string): value is Genre {
   return genres.includes(value as Genre);
@@ -113,6 +114,10 @@ export async function getGenreContext(value: string) {
     restock = filterFallbackRestock(restock, now);
   }
   const priceHistory = await readGenreJson<GenreData["priceHistory"]>(value, "price-history.json");
+  const trackedProductIds = new Set(
+    selectPublicRankingProducts(value, products).map((product) => product.id),
+  );
+  ranking = ranking.filter((item) => trackedProductIds.has(item.id));
 
   return {
     config: genreConfigs[value],

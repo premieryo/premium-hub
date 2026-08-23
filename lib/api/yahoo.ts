@@ -28,6 +28,10 @@ const excludedWords = [
   "ファイル", "サプライ", "空箱", "箱のみ", "中古",
 ];
 
+const openedBoxWords = [
+  "シュリンクなし", "シュリンク無し", "シュリンク無", "開封済み",
+];
+
 function normalize(value: string) {
   return value.normalize("NFKC").toLowerCase().replace(/\s+/g, "");
 }
@@ -49,6 +53,7 @@ function scoreItem(item: YahooItem, query: string, productType: ProductType) {
 
   if (productType === "box") {
     if (!name.includes("box") && !name.includes("ボックス")) return -1;
+    if (openedBoxWords.some((word) => name.includes(normalize(word)))) return -1;
     score += 50;
     if (name.includes("シュリンク") || name.includes("未開封")) score += 20;
   } else if (productType === "figure" || productType === "toy") {
@@ -72,12 +77,17 @@ export async function searchYahooItems(
   }
 
   const productType = options.productType ?? "box";
-  const qualifier = productType === "box" ? "BOX" : productType === "figure" || productType === "toy" ? "本体" : "";
+  const normalizedQuery = normalize(query);
+  const qualifier = productType === "box"
+    ? normalizedQuery.includes("box") || normalizedQuery.includes("ボックス") ? "" : "BOX"
+    : productType === "figure" || productType === "toy"
+      ? normalizedQuery.includes("本体") ? "" : "本体"
+      : "";
   const params = new URLSearchParams({
     appid: clientId,
     query: `${query} ${qualifier}`.trim(),
     results: "50",
-    sort: "+price",
+    sort: "-score",
     condition: "new",
     in_stock: "true",
   });

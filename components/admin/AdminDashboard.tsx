@@ -17,6 +17,7 @@ export default function AdminDashboard() {
   const [genre, setGenre] = useState<Genre>("pokemon");
   const [resource, setResource] = useState<AdminResource>("products");
   const [items, setItems] = useState<AdminItem[]>([]);
+  const [productOptions, setProductOptions] = useState<AdminItem[]>([]);
   const [editing, setEditing] = useState<AdminItem | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -53,6 +54,20 @@ export default function AdminDashboard() {
       });
     return () => { cancelled = true; };
   }, [genre, resource]);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`/api/admin/${genre}/products`, { cache: "no-store" })
+      .then(async (response) => {
+        const body = await response.json();
+        if (!response.ok) throw new Error(body.error ?? "商品マスタの読み込みに失敗しました。");
+        if (!cancelled) setProductOptions(body);
+      })
+      .catch((error: unknown) => {
+        if (!cancelled) setMessage(error instanceof Error ? error.message : "商品マスタの読み込みに失敗しました。");
+      });
+    return () => { cancelled = true; };
+  }, [genre]);
 
   function openCreate() {
     setEditing(null);
@@ -118,7 +133,7 @@ export default function AdminDashboard() {
 
       <button onClick={openCreate} className="fixed bottom-5 right-5 min-h-14 rounded-full bg-blue-600 px-6 text-base font-black shadow-xl shadow-blue-950 hover:bg-blue-500 sm:right-8">＋ 追加</button>
 
-      {showForm && <AdminForm genre={genre} resource={resource} item={editing} onClose={() => setShowForm(false)} onSaved={async () => { setShowForm(false); setMessage(editing ? "更新しました。" : "追加しました。"); await loadItems(); }} />}
+      {showForm && <AdminForm genre={genre} resource={resource} item={editing} productOptions={productOptions} onClose={() => setShowForm(false)} onSaved={async () => { setShowForm(false); setMessage(editing ? "更新しました。" : "追加しました。"); await loadItems(); }} />}
     </main>
   );
 }
@@ -131,10 +146,18 @@ function Status({ text }: { text: string }) {
   return <div className="rounded-2xl border border-slate-800 bg-slate-900 p-8 text-center text-slate-300">{text}</div>;
 }
 
-function AdminForm({ genre, resource, item, onClose, onSaved }: { genre: Genre; resource: AdminResource; item: AdminItem | null; onClose: () => void; onSaved: () => Promise<void> }) {
+function AdminForm({ genre, resource, item, productOptions, onClose, onSaved }: { genre: Genre; resource: AdminResource; item: AdminItem | null; productOptions: AdminItem[]; onClose: () => void; onSaved: () => Promise<void> }) {
   const [values, setValues] = useState<Record<string, string>>(() => ({
     ...Object.fromEntries(Object.entries(item ?? {}).map(([key, value]) => [key, String(value)])),
-    ...Object.fromEntries(adminResourceConfig[resource].fields.map((field) => [field.name, item?.[field.name] === undefined ? "" : String(item[field.name])])),
+    ...Object.fromEntries(adminResourceConfig[resource].fields.map((field) => {
+      const existing = item?.[field.name];
+      if (existing !== undefined) return [field.name, String(existing)];
+      if (field.type === "checkbox") return [field.name, "false"];
+      if (!item && resource === "lottery" && field.name === "observedAt") {
+        return [field.name, new Date().toISOString()];
+      }
+      return [field.name, ""];
+    })),
   }));
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
@@ -165,7 +188,7 @@ function AdminForm({ genre, resource, item, onClose, onSaved }: { genre: Genre; 
         <div className="flex items-center justify-between gap-4"><h2 className="text-2xl font-black">{item ? "編集" : "新規追加"}</h2><button type="button" onClick={onClose} className="min-h-11 rounded-lg px-3 text-slate-300">閉じる</button></div>
         {error && <p className="mt-4 rounded-xl bg-red-950 p-3 text-sm text-red-200">{error}</p>}
         <div className="mt-5 space-y-4">
-          {adminResourceConfig[resource].fields.map((field) => <label key={field.name} className="block text-sm font-bold text-slate-300">{field.label}{field.required && <span className="text-red-400"> *</span>}{field.type === "select" ? <select required={field.required} value={values[field.name]} onChange={(event) => setValues({ ...values, [field.name]: event.target.value })} className="mt-2 min-h-12 w-full rounded-xl border border-slate-700 bg-slate-950 px-3 text-base text-white"><option value="">選択してください</option>{field.options?.map((option) => <option key={option} value={option}>{option}</option>)}</select> : <input required={field.required} type={field.type ?? "text"} min={field.type === "number" && !["changeAmount", "changeRate"].includes(field.name) ? "0" : undefined} step={field.type === "number" ? "any" : undefined} value={values[field.name]} placeholder={field.placeholder} onChange={(event) => setValues({ ...values, [field.name]: event.target.value })} className="mt-2 min-h-12 w-full rounded-xl border border-slate-700 bg-slate-950 px-3 text-base text-white placeholder:text-slate-600" />}</label>)}
+          {adminResourceConfig[resource].fields.map((field) => <label key={field.name} className="block text-sm font-bold text-slate-300">{field.label}{field.required && <span className="text-red-400"> *</span>}{field.type === "checkbox" ? <span className="mt-2 flex min-h-12 items-center gap-3 rounded-xl border border-slate-700 bg-slate-950 px-3"><input type="checkbox" checked={values[field.name] === "true"} onChange={(event) => setValues({ ...values, [field.name]: String(event.target.checked) })} className="size-5 accent-blue-600" /><span className="font-normal">有効にする</span></span> : field.type === "product-reference" ? <select value={values[field.name]} onChange={(event) => setValues({ ...values, [field.name]: event.target.value })} className="mt-2 min-h-12 w-full rounded-xl border border-slate-700 bg-slate-950 px-3 text-base text-white"><option value="">未紐付け</option>{productOptions.map((product) => <option key={String(product.id)} value={String(product.id)}>{String(product.name ?? product.id)}</option>)}</select> : field.type === "select" ? <select required={field.required} value={values[field.name]} onChange={(event) => setValues({ ...values, [field.name]: event.target.value })} className="mt-2 min-h-12 w-full rounded-xl border border-slate-700 bg-slate-950 px-3 text-base text-white"><option value="">選択してください</option>{field.options?.map((option) => <option key={option} value={option}>{option}</option>)}</select> : <input required={field.required} type={field.type === "datetime" ? "text" : field.type ?? "text"} min={field.type === "number" && !["changeAmount", "changeRate"].includes(field.name) ? "0" : undefined} step={field.type === "number" ? "any" : undefined} value={values[field.name]} placeholder={field.placeholder} onChange={(event) => setValues({ ...values, [field.name]: event.target.value })} className="mt-2 min-h-12 w-full rounded-xl border border-slate-700 bg-slate-950 px-3 text-base text-white placeholder:text-slate-600" />}</label>)}
         </div>
         <button disabled={saving} className="mt-7 min-h-14 w-full rounded-xl bg-blue-600 text-lg font-black disabled:opacity-50">{saving ? "保存中..." : "保存する"}</button>
       </form>
