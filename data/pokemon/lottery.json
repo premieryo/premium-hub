@@ -5,7 +5,9 @@
     "shop": "ポケモンセンターオンライン",
     "product": "新弾ポケモンカードBOX",
     "deadline": "8月5日 23:59まで",
-    "status": "受付中",
+    "status": "終了",
+    "publicationStatus": "rejected",
+    "matchStatus": "unmatched",
     "icon": "📦",
     "href": "/pokemon/lottery"
   },
@@ -15,7 +17,9 @@
     "shop": "ヨドバシカメラ",
     "product": "ポケモンカード抽選販売",
     "deadline": "8月7日 10:59まで",
-    "status": "受付中",
+    "status": "終了",
+    "publicationStatus": "rejected",
+    "matchStatus": "unmatched",
     "icon": "🎴",
     "href": "/pokemon/lottery"
   },
@@ -25,7 +29,9 @@
     "shop": "ビックカメラ",
     "product": "ポケモンカード予約抽選",
     "deadline": "受付開始待ち",
-    "status": "近日開始",
+    "status": "確認不能",
+    "publicationStatus": "rejected",
+    "matchStatus": "unmatched",
     "icon": "⭐",
     "href": "/pokemon/lottery"
   }
