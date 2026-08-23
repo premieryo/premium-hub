@@ -11,7 +11,7 @@ export function isAdminResource(value: string): value is AdminResource {
 export type AdminField = {
   name: string;
   label: string;
-  type?: "text" | "number" | "date" | "datetime" | "url" | "select" | "checkbox" | "product-reference";
+  type?: "text" | "number" | "date" | "datetime" | "url" | "select" | "checkbox" | "product-reference" | "hidden";
   required?: boolean;
   options?: string[];
   placeholder?: string;
@@ -22,9 +22,25 @@ const commonInfoFields: AdminField[] = [
   { name: "shop", label: "ショップ", required: true },
   { name: "product", label: "商品名", required: true },
   { name: "status", label: "ステータス", required: true },
-  { name: "icon", label: "アイコン", required: true, placeholder: "📦" },
-  { name: "href", label: "リンク先", required: true, placeholder: "/pokemon/lottery" },
+  { name: "icon", label: "アイコン", type: "hidden", required: true },
+  { name: "href", label: "リンク先", type: "hidden", required: true },
 ];
+
+function parseTokyoDateTime(value: string) {
+  const hasOffset = /(?:Z|[+-]\d{2}:\d{2})$/i.test(value);
+  const parsed = new Date(hasOffset ? value : `${value}+09:00`);
+  return Number.isNaN(parsed.getTime()) ? null : parsed.toISOString();
+}
+
+function formatTokyoDisplay(value: string) {
+  return new Intl.DateTimeFormat("ja-JP", {
+    timeZone: "Asia/Tokyo",
+    month: "numeric",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(value));
+}
 
 export const adminResourceConfig: Record<AdminResource, { label: string; fields: AdminField[] }> = {
   products: {
@@ -43,11 +59,11 @@ export const adminResourceConfig: Record<AdminResource, { label: string; fields:
   },
   lottery: {
     label: "抽選情報",
-    fields: [...commonInfoFields, { name: "productId", label: "商品マスタ", type: "product-reference" }, { name: "applicationStart", label: "応募開始", type: "datetime", placeholder: "ISO 8601形式" }, { name: "deadline", label: "応募締切（表示用）", required: true }, { name: "deadlineAt", label: "締切日時", type: "datetime", placeholder: "ISO 8601形式" }, { name: "resultDate", label: "結果発表", type: "datetime", placeholder: "ISO 8601形式" }, { name: "saleDate", label: "販売日時", type: "datetime", placeholder: "ISO 8601形式" }, { name: "officialUrl", label: "公式URL", type: "url" }, { name: "source", label: "情報源" }, { name: "fetchedAt", label: "取得日時", type: "datetime", placeholder: "ISO 8601形式" }, { name: "observedAt", label: "確認日時", type: "datetime", placeholder: "ISO 8601形式" }, { name: "publicationStatus", label: "公開承認", type: "select", options: ["pending", "approved", "rejected"] }],
+    fields: [...commonInfoFields, { name: "productId", label: "商品マスタ", type: "product-reference" }, { name: "deadlineAt", label: "締切日時（日本時間）", type: "datetime" }, { name: "officialUrl", label: "公式URL", type: "url" }, { name: "publicationStatus", label: "公開承認", type: "select", options: ["pending", "approved", "rejected"] }, { name: "applicationStart", label: "応募開始（日本時間）", type: "datetime" }, { name: "resultDate", label: "結果発表（日本時間）", type: "datetime" }, { name: "saleDate", label: "販売日時（日本時間）", type: "datetime" }, { name: "deadline", label: "応募締切（表示用）" }, { name: "source", label: "情報源", type: "hidden" }, { name: "fetchedAt", label: "取得日時", type: "hidden" }, { name: "observedAt", label: "確認日時", type: "hidden" }],
   },
   restock: {
     label: "再販情報",
-    fields: [...commonInfoFields, { name: "productId", label: "商品マスタ", type: "product-reference" }, { name: "date", label: "販売開始（表示用）", required: true }, { name: "saleStart", label: "販売開始日時", type: "datetime", placeholder: "ISO 8601形式" }, { name: "officialUrl", label: "公式URL", type: "url" }, { name: "source", label: "情報源" }, { name: "fetchedAt", label: "取得日時", type: "datetime", placeholder: "ISO 8601形式" }, { name: "channel", label: "販売方法", type: "select", options: ["online", "store"] }, { name: "region", label: "地域" }, { name: "quantityLimit", label: "購入制限" }, { name: "publicationStatus", label: "公開承認", type: "select", options: ["pending", "approved", "rejected"] }],
+    fields: [...commonInfoFields, { name: "productId", label: "商品マスタ", type: "product-reference" }, { name: "saleStart", label: "販売開始日時（日本時間）", type: "datetime" }, { name: "officialUrl", label: "公式URL", type: "url" }, { name: "publicationStatus", label: "公開承認", type: "select", options: ["pending", "approved", "rejected"] }, { name: "channel", label: "販売方法", type: "select", options: ["online", "store"] }, { name: "region", label: "地域" }, { name: "quantityLimit", label: "購入制限" }, { name: "date", label: "販売開始（表示用）" }, { name: "source", label: "情報源", type: "hidden" }, { name: "fetchedAt", label: "取得日時", type: "hidden" }],
   },
   ranking: {
     label: "ランキング",
@@ -76,11 +92,12 @@ export function validateAdminItem(resource: AdminResource, value: unknown, genre
       const text = String(raw).trim();
       if (field.name === "id" && !/^[a-z0-9][a-z0-9-]*$/.test(text)) return { error: "IDは半角英小文字・数字・ハイフンで入力してください。" };
       if (field.type === "date" && Number.isNaN(Date.parse(text))) return { error: `${field.label}の日付が不正です。` };
-      if (field.type === "datetime" && Number.isNaN(Date.parse(text))) return { error: `${field.label}は有効なISO 8601日時で入力してください。` };
+      const datetime = field.type === "datetime" ? parseTokyoDateTime(text) : null;
+      if (field.type === "datetime" && !datetime) return { error: `${field.label}は有効な日時で入力してください。` };
       if (field.type === "url" && !/^https?:\/\//.test(text)) return { error: `${field.label}はhttp(s) URLで入力してください。` };
       if (field.name === "href" && !text.startsWith("/")) return { error: "リンク先は/から始めてください。" };
       if (field.options && !field.options.includes(text)) return { error: `${field.label}の選択値が不正です。` };
-      item[field.name] = field.type === "datetime" ? new Date(text).toISOString() : text;
+      item[field.name] = field.type === "datetime" ? datetime! : text;
     }
   }
 
@@ -95,8 +112,11 @@ export function validateAdminItem(resource: AdminResource, value: unknown, genre
     item.price = item.price || `${current.toLocaleString()}円`;
   }
 
-  if ((resource === "lottery" || resource === "restock") && item.publicationStatus === undefined) {
-    item.publicationStatus = "approved";
+  if (resource === "lottery" && !item.deadline && typeof item.deadlineAt === "string") {
+    item.deadline = formatTokyoDisplay(item.deadlineAt);
+  }
+  if (resource === "restock" && !item.date && typeof item.saleStart === "string") {
+    item.date = formatTokyoDisplay(item.saleStart);
   }
 
   return { item: item as AdminItem };

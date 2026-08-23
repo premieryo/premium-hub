@@ -62,6 +62,9 @@ export async function POST(request: Request, context: Context) {
     const validation = validateAdminItem(scope.resource!, await request.json(), scope.genre!);
     if (!validation.item) return failure(validation.error ?? "入力内容を確認してください。");
     if (scope.resource === "lottery" || scope.resource === "restock") {
+      validation.item.publicationStatus ||= "pending";
+      validation.item.source ||= "manual";
+      validation.item.fetchedAt ||= new Date().toISOString();
       if (scope.resource === "lottery") validation.item.observedAt ||= new Date().toISOString();
       const referenceError = await validateProductReference(scope.supabase!, scope.genre!, validation.item);
       if (referenceError) return referenceError;

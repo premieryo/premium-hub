@@ -176,14 +176,30 @@ function Status({ text }: { text: string }) {
 }
 
 function AdminForm({ genre, resource, item, productOptions, onClose, onSaved }: { genre: Genre; resource: AdminResource; item: AdminItem | null; productOptions: AdminItem[]; onClose: () => void; onSaved: () => Promise<void> }) {
+  const isInformation = resource === "lottery" || resource === "restock";
   const [values, setValues] = useState<Record<string, string>>(() => ({
     ...Object.fromEntries(Object.entries(item ?? {}).map(([key, value]) => [key, String(value)])),
     ...Object.fromEntries(adminResourceConfig[resource].fields.map((field) => {
       const existing = item?.[field.name];
-      if (existing !== undefined) return [field.name, String(existing)];
+      if (existing !== undefined) {
+        if (field.type === "datetime") {
+          const parsed = new Date(String(existing));
+          if (!Number.isNaN(parsed.getTime())) return [field.name, new Date(parsed.getTime() + 9 * 60 * 60 * 1000).toISOString().slice(0, 16)];
+        }
+        return [field.name, String(existing)];
+      }
       if (field.type === "checkbox") return [field.name, "false"];
       if (!item && resource === "lottery" && field.name === "observedAt") {
         return [field.name, new Date().toISOString()];
+      }
+      if (!item && isInformation) {
+        if (field.name === "id") return [field.name, `manual-${resource}-${Date.now()}`];
+        if (field.name === "status") return [field.name, "確認待ち"];
+        if (field.name === "icon") return [field.name, resource === "lottery" ? "🎯" : "🛒"];
+        if (field.name === "href") return [field.name, `/${genre}/${resource}`];
+        if (field.name === "source") return [field.name, "manual"];
+        if (field.name === "fetchedAt") return [field.name, new Date().toISOString()];
+        if (field.name === "publicationStatus") return [field.name, "pending"];
       }
       return [field.name, ""];
     })),
@@ -217,7 +233,7 @@ function AdminForm({ genre, resource, item, productOptions, onClose, onSaved }: 
         <div className="flex items-center justify-between gap-4"><h2 className="text-2xl font-black">{item ? "編集" : "新規追加"}</h2><button type="button" onClick={onClose} className="min-h-11 rounded-lg px-3 text-slate-300">閉じる</button></div>
         {error && <p className="mt-4 rounded-xl bg-red-950 p-3 text-sm text-red-200">{error}</p>}
         <div className="mt-5 space-y-4">
-          {adminResourceConfig[resource].fields.map((field) => <label key={field.name} className="block text-sm font-bold text-slate-300">{field.label}{field.required && <span className="text-red-400"> *</span>}{field.type === "checkbox" ? <span className="mt-2 flex min-h-12 items-center gap-3 rounded-xl border border-slate-700 bg-slate-950 px-3"><input type="checkbox" checked={values[field.name] === "true"} onChange={(event) => setValues({ ...values, [field.name]: String(event.target.checked) })} className="size-5 accent-blue-600" /><span className="font-normal">有効にする</span></span> : field.type === "product-reference" ? <select value={values[field.name]} onChange={(event) => setValues({ ...values, [field.name]: event.target.value })} className="mt-2 min-h-12 w-full rounded-xl border border-slate-700 bg-slate-950 px-3 text-base text-white"><option value="">未紐付け</option>{productOptions.map((product) => <option key={String(product.id)} value={String(product.id)}>{String(product.name ?? product.id)}</option>)}</select> : field.type === "select" ? <select required={field.required} value={values[field.name]} onChange={(event) => setValues({ ...values, [field.name]: event.target.value })} className="mt-2 min-h-12 w-full rounded-xl border border-slate-700 bg-slate-950 px-3 text-base text-white"><option value="">選択してください</option>{field.options?.map((option) => <option key={option} value={option}>{option}</option>)}</select> : <input required={field.required} type={field.type === "datetime" ? "text" : field.type ?? "text"} min={field.type === "number" && !["changeAmount", "changeRate"].includes(field.name) ? "0" : undefined} step={field.type === "number" ? "any" : undefined} value={values[field.name]} placeholder={field.placeholder} onChange={(event) => setValues({ ...values, [field.name]: event.target.value })} className="mt-2 min-h-12 w-full rounded-xl border border-slate-700 bg-slate-950 px-3 text-base text-white placeholder:text-slate-600" />}</label>)}
+          {adminResourceConfig[resource].fields.map((field) => <label key={field.name} className={field.type === "hidden" ? "hidden" : "block text-sm font-bold text-slate-300"}>{field.label}{field.required && <span className="text-red-400"> *</span>}{field.type === "checkbox" ? <span className="mt-2 flex min-h-12 items-center gap-3 rounded-xl border border-slate-700 bg-slate-950 px-3"><input type="checkbox" checked={values[field.name] === "true"} onChange={(event) => setValues({ ...values, [field.name]: String(event.target.checked) })} className="size-5 accent-blue-600" /><span className="font-normal">有効にする</span></span> : field.type === "product-reference" ? <select value={values[field.name]} onChange={(event) => setValues({ ...values, [field.name]: event.target.value })} className="mt-2 min-h-12 w-full rounded-xl border border-slate-700 bg-slate-950 px-3 text-base text-white"><option value="">未紐付け</option>{productOptions.map((product) => <option key={String(product.id)} value={String(product.id)}>{String(product.name ?? product.id)}</option>)}</select> : field.type === "select" ? <select required={field.required} value={values[field.name]} onChange={(event) => setValues({ ...values, [field.name]: event.target.value })} className="mt-2 min-h-12 w-full rounded-xl border border-slate-700 bg-slate-950 px-3 text-base text-white"><option value="">選択してください</option>{field.options?.map((option) => <option key={option} value={option}>{option}</option>)}</select> : <input required={field.required} type={field.type === "datetime" ? "datetime-local" : field.type ?? "text"} min={field.type === "number" && !["changeAmount", "changeRate"].includes(field.name) ? "0" : undefined} step={field.type === "number" ? "any" : undefined} value={values[field.name]} placeholder={field.placeholder} onChange={(event) => setValues({ ...values, [field.name]: event.target.value })} className="mt-2 min-h-12 w-full rounded-xl border border-slate-700 bg-slate-950 px-3 text-base text-white placeholder:text-slate-600" />}</label>)}
         </div>
         <button disabled={saving} className="mt-7 min-h-14 w-full rounded-xl bg-blue-600 text-lg font-black disabled:opacity-50">{saving ? "保存中..." : "保存する"}</button>
       </form>

@@ -10,5 +10,8 @@ export function createPublicClient() {
       autoRefreshToken: false,
       persistSession: false,
     },
+    global: {
+      fetch: (input, init) => fetch(input, { ...init, next: { revalidate: 60 } }),
+    },
   });
 }
