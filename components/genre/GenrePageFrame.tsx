@@ -25,6 +25,11 @@ export default function GenrePageFrame({
           ← {home ? "トップページへ戻る" : `${config.name}ページへ戻る`}
         </Link>
         {children}
+        <footer className="mt-12 border-t border-slate-800 py-6 text-center text-xs text-slate-500">
+          <Link href="/privacy" className="underline-offset-4 hover:text-blue-300 hover:underline">
+            プライバシーポリシー・免責事項
+          </Link>
+        </footer>
       </div>
     </main>
   );

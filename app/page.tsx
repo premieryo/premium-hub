@@ -250,6 +250,9 @@ export default async function HomePage() {
         <footer className="mt-14 border-t border-blue-400/15 py-8 text-center text-xs text-slate-500">
           <p className="font-bold tracking-[0.18em] text-slate-400">PREMIUM HUB</p>
           <p className="mt-2">プレミア速報｜手に入れた後の行動まで、初心者にも分かりやすく</p>
+          <Link href="/privacy" className="mt-3 inline-block underline-offset-4 hover:text-blue-300 hover:underline">
+            プライバシーポリシー・免責事項
+          </Link>
         </footer>
       </div>
     </main>

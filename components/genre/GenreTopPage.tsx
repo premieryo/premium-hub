@@ -55,9 +55,9 @@ export default function GenreTopPage({ config, data }: { config: GenreConfig; da
       </section>
 
       <section className="mt-10 grid gap-4 md:grid-cols-3">
-        <SectionLink href={`/${config.slug}/ranking`} title="📈 高騰ランキング" text="値上がりしている商品を掲載予定" />
-        <SectionLink href={`/${config.slug}/restock`} title="🛒 再販情報" text="店舗や通販の再販情報を掲載予定" />
-        <SectionLink href={`/${config.slug}/guide`} title="📖 初心者ガイド" text="購入後の保管や売却方法を掲載予定" />
+        <SectionLink href={`/${config.slug}/ranking`} title="📈 高騰ランキング" text="追跡商品の価格と変動を確認" />
+        <SectionLink href={`/${config.slug}/restock`} title="🛒 再販情報" text="確認済みの店舗・通販情報を掲載" />
+        <SectionLink href={`/${config.slug}/guide`} title="📖 初心者ガイド" text="購入後の保管や相場の見方を解説" />
       </section>
     </GenrePageFrame>
   );

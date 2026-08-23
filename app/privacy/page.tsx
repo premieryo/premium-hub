@@ -5,6 +5,9 @@ export const metadata: Metadata = {
   title: "プライバシーポリシー・免責事項 | プレミア速報",
   description:
     "プレミア速報のプライバシーポリシー、広告・アフィリエイト、免責事項についての説明です。",
+  alternates: {
+    canonical: "/privacy",
+  },
 };
 
 const sections = [
