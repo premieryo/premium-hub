@@ -1,4 +1,5 @@
 import type { Product } from "@/data/types";
+import ProductImage from "@/components/product/ProductImage";
 
 export default function PublicProductCard({ product }: { product: Product }) {
   const releaseDate = new Intl.DateTimeFormat("ja-JP", {
@@ -16,7 +17,14 @@ export default function PublicProductCard({ product }: { product: Product }) {
         <span className="text-xs text-slate-400">発売日 {releaseDate}</span>
       </div>
 
-      <h3 className="mt-4 text-xl font-black text-white">{product.name}</h3>
+      <div className="mt-4 flex items-start gap-4">
+        <ProductImage
+          alt={product.imageAlt || product.name}
+          fallbackIcon="◇"
+          className="h-20 w-20"
+        />
+        <h3 className="min-w-0 flex-1 text-xl font-black text-white">{product.name}</h3>
+      </div>
 
       <dl className="mt-4 space-y-2 text-sm">
         <div className="flex items-center justify-between gap-4">

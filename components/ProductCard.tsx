@@ -1,4 +1,6 @@
 import Link from "next/link";
+import type { ProductImageAsset } from "@/data/types";
+import ProductImage from "@/components/product/ProductImage";
 type ProductCardProps = {
   emoji: string;
   category: string;
@@ -6,6 +8,7 @@ type ProductCardProps = {
   price: string;
   description: string;
   href: string;
+  image?: ProductImageAsset;
 };
 export default function ProductCard({
   emoji,
@@ -14,6 +17,7 @@ export default function ProductCard({
   price,
   description,
   href,
+  image,
 }: ProductCardProps) {
   return (
     <article className="rounded-2xl border border-white/10 bg-slate-900 p-4 transition hover:-translate-y-1">
@@ -28,9 +32,7 @@ export default function ProductCard({
   </div>
 
   <div className="mt-3 flex items-center gap-4">
-    <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-slate-800 to-blue-900 text-3xl">
-      {emoji}
-    </div>
+    <ProductImage asset={image} alt={title} fallbackIcon={emoji} />
 
     <div className="min-w-0 flex-1">
       <h3 className="text-lg font-black text-white">

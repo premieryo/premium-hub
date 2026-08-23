@@ -10,6 +10,24 @@ export type Genre = (typeof genres)[number];
 
 export type ProductType = "box" | "card" | "figure" | "toy" | "other";
 
+export const productImageSources = [
+  "amazon",
+  "valuecommerce",
+  "licensed-asp",
+] as const;
+
+export type ProductImageSource = (typeof productImageSources)[number];
+
+export type ProductImageAsset = {
+  source: ProductImageSource;
+  src: string;
+  clickUrl: string;
+  alt: string;
+  width: number;
+  height: number;
+  fetchedAt?: string;
+};
+
 export type Product = {
   id: string;
   name: string;
@@ -18,6 +36,13 @@ export type Product = {
   searchWord: string;
   releaseDate: string;
   priceTrackingEnabled?: boolean;
+  jan?: string;
+  modelNumber?: string;
+  imageSource?: ProductImageSource;
+  imageSourceId?: string;
+  imageAlt?: string;
+  imageEnabled?: boolean;
+  affiliateUrl?: string;
   shop?: string;
   marketPrice?: number;
   url?: string;
