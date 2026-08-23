@@ -11,6 +11,7 @@
     "start": "next start",
     "lint": "eslint",
     "update:prices": "tsx scripts/update.ts",
+    "update:prices:apply": "tsx scripts/update.ts --apply",
     "update:pokemon": "tsx scripts/updatePokemon.ts",
     "test:yahoo": "tsx scripts/testYahoo.ts",
     "migrate:supabase": "tsx --env-file=.env.local scripts/migrateJsonToSupabase.ts"
