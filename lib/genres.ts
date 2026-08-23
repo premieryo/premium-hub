@@ -12,6 +12,7 @@ import { join } from "node:path";
 import { createPublicClient } from "@/lib/supabase/public";
 import type { AdminResource } from "./admin-data";
 import { selectPublicRankingProducts } from "./price-tracking";
+import { isPublicInformationItem } from "./information-moderation";
 
 export function isGenre(value: string): value is Genre {
   return genres.includes(value as Genre);
@@ -39,10 +40,6 @@ function getTokyoDateParts(date: Date) {
   return { year: parts.year, month: parts.month, day: parts.day };
 }
 
-function getDateNumber({ year, month, day }: { year: number; month: number; day: number }) {
-  return year * 10_000 + month * 100 + day;
-}
-
 function parseJapaneseDate(value: string, now: Date) {
   const match = value.match(/(\d{1,2})月(\d{1,2})日(?:\s*(\d{1,2}):(\d{2}))?/);
   if (!match) return null;
@@ -64,8 +61,9 @@ function parseJapaneseDate(value: string, now: Date) {
   return date;
 }
 
-function filterFallbackLottery(items: LotteryItem[], now: Date) {
+function filterPublicLottery(items: LotteryItem[], now: Date) {
   return items.filter((item) => {
+    if (!isPublicInformationItem(item)) return false;
     if (item.deadlineAt) {
       const deadline = new Date(item.deadlineAt);
       return Number.isNaN(deadline.getTime()) || deadline.getTime() >= now.getTime();
@@ -75,12 +73,16 @@ function filterFallbackLottery(items: LotteryItem[], now: Date) {
   });
 }
 
-function filterFallbackRestock(items: RestockItem[], now: Date) {
-  const today = getDateNumber(getTokyoDateParts(now));
+function filterPublicRestock(items: RestockItem[], now: Date) {
+  const retentionStart = now.getTime() - 7 * 24 * 60 * 60 * 1000;
   return items.filter((item) => {
-    const restock = item.restockAt ? new Date(item.restockAt) : parseJapaneseDate(item.date, now);
+    if (!isPublicInformationItem(item) || ["終了", "販売終了", "完売"].includes(item.status)) return false;
+    const exactStart = item.saleStart ?? item.restockAt;
+    const restock = exactStart
+      ? new Date(exactStart)
+      : parseJapaneseDate(item.date, now);
     if (!restock || Number.isNaN(restock.getTime())) return true;
-    return getDateNumber(getTokyoDateParts(restock)) >= today;
+    return restock.getTime() >= retentionStart;
   });
 }
 
@@ -109,10 +111,10 @@ export async function getGenreContext(value: string) {
       readGenreJson<GenreData["restock"]>(value, "restock.json"),
       readGenreJson<GenreData["ranking"]>(value, "ranking.json"),
     ]);
-    const now = new Date();
-    lottery = filterFallbackLottery(lottery, now);
-    restock = filterFallbackRestock(restock, now);
   }
+  const now = new Date();
+  lottery = filterPublicLottery(lottery, now);
+  restock = filterPublicRestock(restock, now);
   const priceHistory = await readGenreJson<GenreData["priceHistory"]>(value, "price-history.json");
   const trackedProductIds = new Set(
     selectPublicRankingProducts(value, products).map((product) => product.id),

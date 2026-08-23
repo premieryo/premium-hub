@@ -43,11 +43,11 @@ export const adminResourceConfig: Record<AdminResource, { label: string; fields:
   },
   lottery: {
     label: "抽選情報",
-    fields: [...commonInfoFields, { name: "productId", label: "商品マスタ", type: "product-reference" }, { name: "observedAt", label: "確認日時", type: "datetime", placeholder: "ISO 8601形式" }, { name: "deadline", label: "応募締切", required: true }, { name: "deadlineAt", label: "締切日時", type: "text", placeholder: "ISO 8601形式" }, { name: "officialUrl", label: "公式URL", type: "url" }],
+    fields: [...commonInfoFields, { name: "productId", label: "商品マスタ", type: "product-reference" }, { name: "applicationStart", label: "応募開始", type: "datetime", placeholder: "ISO 8601形式" }, { name: "deadline", label: "応募締切（表示用）", required: true }, { name: "deadlineAt", label: "締切日時", type: "datetime", placeholder: "ISO 8601形式" }, { name: "resultDate", label: "結果発表", type: "datetime", placeholder: "ISO 8601形式" }, { name: "saleDate", label: "販売日時", type: "datetime", placeholder: "ISO 8601形式" }, { name: "officialUrl", label: "公式URL", type: "url" }, { name: "source", label: "情報源" }, { name: "fetchedAt", label: "取得日時", type: "datetime", placeholder: "ISO 8601形式" }, { name: "observedAt", label: "確認日時", type: "datetime", placeholder: "ISO 8601形式" }, { name: "publicationStatus", label: "公開承認", type: "select", options: ["pending", "approved", "rejected"] }],
   },
   restock: {
     label: "再販情報",
-    fields: [...commonInfoFields, { name: "date", label: "販売開始", required: true }, { name: "restockAt", label: "販売開始日時", type: "text", placeholder: "ISO 8601形式" }],
+    fields: [...commonInfoFields, { name: "productId", label: "商品マスタ", type: "product-reference" }, { name: "date", label: "販売開始（表示用）", required: true }, { name: "saleStart", label: "販売開始日時", type: "datetime", placeholder: "ISO 8601形式" }, { name: "officialUrl", label: "公式URL", type: "url" }, { name: "source", label: "情報源" }, { name: "fetchedAt", label: "取得日時", type: "datetime", placeholder: "ISO 8601形式" }, { name: "channel", label: "販売方法", type: "select", options: ["online", "store"] }, { name: "region", label: "地域" }, { name: "quantityLimit", label: "購入制限" }, { name: "publicationStatus", label: "公開承認", type: "select", options: ["pending", "approved", "rejected"] }],
   },
   ranking: {
     label: "ランキング",
@@ -79,6 +79,7 @@ export function validateAdminItem(resource: AdminResource, value: unknown, genre
       if (field.type === "datetime" && Number.isNaN(Date.parse(text))) return { error: `${field.label}は有効なISO 8601日時で入力してください。` };
       if (field.type === "url" && !/^https?:\/\//.test(text)) return { error: `${field.label}はhttp(s) URLで入力してください。` };
       if (field.name === "href" && !text.startsWith("/")) return { error: "リンク先は/から始めてください。" };
+      if (field.options && !field.options.includes(text)) return { error: `${field.label}の選択値が不正です。` };
       item[field.name] = field.type === "datetime" ? new Date(text).toISOString() : text;
     }
   }
@@ -92,6 +93,10 @@ export function validateAdminItem(resource: AdminResource, value: unknown, genre
     item.changeAmount = amount;
     item.changeRate = Number(rate.toFixed(2));
     item.price = item.price || `${current.toLocaleString()}円`;
+  }
+
+  if ((resource === "lottery" || resource === "restock") && item.publicationStatus === undefined) {
+    item.publicationStatus = "approved";
   }
 
   return { item: item as AdminItem };

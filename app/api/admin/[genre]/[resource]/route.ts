@@ -4,8 +4,9 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Genre } from "@/data/types";
 import { getAdminSession } from "@/lib/admin-auth";
 import { isGenre } from "@/lib/genres";
-import { isAdminResource, validateAdminItem } from "@/lib/admin-data";
-import { createAdminItem, deleteAdminItem, productReferenceExists, readAdminItems, updateAdminItem } from "@/lib/admin-storage";
+import { isAdminResource, validateAdminItem, type AdminItem } from "@/lib/admin-data";
+import { createAdminItem, deleteAdminItem, informationDuplicateExists, productReferenceExists, readAdminItems, updateAdminItem, updateInformationPublicationStatus } from "@/lib/admin-storage";
+import { prepareInformationItem, type InformationResource } from "@/lib/information-moderation";
 
 type Context = { params: Promise<{ genre: string; resource: string }> };
 const failure = (message: string, status = 400) => NextResponse.json({ error: message }, { status });
@@ -32,6 +33,20 @@ async function validateProductReference(client: SupabaseClient, genre: Genre, it
     : failure("選択した商品マスタが同じジャンルに存在しません。");
 }
 
+async function prepareInformation(client: SupabaseClient, genre: Genre, resource: InformationResource, item: AdminItem, excludeId?: string) {
+  const prepared = prepareInformationItem(genre, resource, item);
+  if (prepared.publicationStatus === "pending") {
+    const exactDate = resource === "lottery" ? prepared.deadlineAt : prepared.saleStart;
+    if (!prepared.officialUrl || !prepared.source || !prepared.fetchedAt || !exactDate) {
+      return { error: failure("自動取得候補には公式URL・情報源・取得日時・正確な締切/開始日時が必要です。") };
+    }
+  }
+  if (await informationDuplicateExists(client, genre, resource, prepared, excludeId)) {
+    return { error: failure("同じ抽選・再販情報が既に存在します。") };
+  }
+  return { item: prepared };
+}
+
 export async function GET(_request: Request, context: Context) {
   try {
     const scope = await requestContext(context);
@@ -46,10 +61,13 @@ export async function POST(request: Request, context: Context) {
     if (scope.error) return scope.error;
     const validation = validateAdminItem(scope.resource!, await request.json(), scope.genre!);
     if (!validation.item) return failure(validation.error ?? "入力内容を確認してください。");
-    if (scope.resource === "lottery") {
-      validation.item.observedAt ||= new Date().toISOString();
+    if (scope.resource === "lottery" || scope.resource === "restock") {
+      if (scope.resource === "lottery") validation.item.observedAt ||= new Date().toISOString();
       const referenceError = await validateProductReference(scope.supabase!, scope.genre!, validation.item);
       if (referenceError) return referenceError;
+      const prepared = await prepareInformation(scope.supabase!, scope.genre!, scope.resource, validation.item);
+      if (!prepared.item) return prepared.error;
+      validation.item = prepared.item;
     }
     await createAdminItem(scope.supabase, scope.genre!, scope.resource!, validation.item);
     revalidate(scope.genre!, scope.resource!);
@@ -64,14 +82,31 @@ export async function PUT(request: Request, context: Context) {
     const body = await request.json() as { originalId?: string; item?: unknown };
     const validation = validateAdminItem(scope.resource!, body.item, scope.genre!);
     if (!body.originalId || !validation.item) return failure(validation.error ?? "更新対象が不正です。");
-    if (scope.resource === "lottery") {
+    if (scope.resource === "lottery" || scope.resource === "restock") {
       const referenceError = await validateProductReference(scope.supabase!, scope.genre!, validation.item);
       if (referenceError) return referenceError;
+      const prepared = await prepareInformation(scope.supabase!, scope.genre!, scope.resource, validation.item, body.originalId);
+      if (!prepared.item) return prepared.error;
+      validation.item = prepared.item;
     }
     const saved = await updateAdminItem(scope.supabase, scope.genre!, scope.resource!, body.originalId, validation.item);
     revalidate(scope.genre!, scope.resource!);
     return NextResponse.json(saved);
   } catch (error) { return failure(error instanceof Error ? error.message : "DBの更新に失敗しました。", 500); }
+}
+
+
+export async function PATCH(request: Request, context: Context) {
+  try {
+    const scope = await requestContext(context);
+    if (scope.error) return scope.error;
+    if (scope.resource !== "lottery" && scope.resource !== "restock") return failure("この項目は承認操作に対応していません。", 404);
+    const body = await request.json() as { id?: string; action?: string };
+    if (!body.id || (body.action !== "approve" && body.action !== "reject")) return failure("承認操作が不正です。");
+    const saved = await updateInformationPublicationStatus(scope.supabase!, scope.genre!, scope.resource, body.id, body.action === "approve" ? "approved" : "rejected");
+    revalidate(scope.genre!, scope.resource!);
+    return NextResponse.json(saved);
+  } catch (error) { return failure(error instanceof Error ? error.message : "承認状態の更新に失敗しました。", 500); }
 }
 
 export async function DELETE(request: Request, context: Context) {

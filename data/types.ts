@@ -57,19 +57,31 @@ type InformationItem = {
   status: string;
   icon: string;
   href: string;
+  productId?: string;
+  officialUrl?: string;
+  source?: string;
+  fetchedAt?: string;
+  publicationStatus?: "pending" | "approved" | "rejected";
+  matchStatus?: "matched" | "unmatched";
+  dedupKey?: string;
 };
 
 export type LotteryItem = InformationItem & {
   deadline: string;
+  applicationStart?: string;
   deadlineAt?: string;
-  officialUrl?: string;
-  productId?: string;
+  resultDate?: string;
+  saleDate?: string;
   observedAt?: string;
 };
 
 export type RestockItem = InformationItem & {
   date: string;
+  saleStart?: string;
   restockAt?: string;
+  channel?: "online" | "store";
+  region?: string;
+  quantityLimit?: string;
 };
 
 export type RankingItem = InformationItem & {

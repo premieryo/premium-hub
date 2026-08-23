@@ -94,6 +94,18 @@ export default function AdminDashboard() {
     await loadItems();
   }
 
+  async function review(item: AdminItem, action: "approve" | "reject") {
+    const response = await fetch(`/api/admin/${genre}/${resource}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: item.id, action }),
+    });
+    const body = await response.json();
+    if (!response.ok) return setMessage(body.error ?? "承認操作に失敗しました。");
+    setMessage(action === "approve" ? "候補を承認しました。" : "候補を却下しました。");
+    await loadItems();
+  }
+
   return (
     <main className="min-h-screen bg-slate-950 px-4 pb-28 pt-6 text-white sm:px-6">
       <div className="mx-auto max-w-5xl">
@@ -119,9 +131,26 @@ export default function AdminDashboard() {
         <section className="mt-4 space-y-3">
           {loading ? <Status text="読み込み中..." /> : items.length === 0 ? <Status text="現在情報はありません" /> : items.map((item) => (
             <article key={item.id} className="rounded-2xl border border-slate-800 bg-slate-900 p-4">
-              <p className="break-words text-xs text-slate-500">{item.id}</p>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <p className="break-words text-xs text-slate-500">{item.id}</p>
+                {(resource === "lottery" || resource === "restock") && (
+                  <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${item.publicationStatus === "pending" ? "bg-amber-500/20 text-amber-200" : item.publicationStatus === "rejected" ? "bg-slate-700 text-slate-300" : "bg-emerald-500/20 text-emerald-200"}`}>
+                    {item.publicationStatus === "pending" ? "自動取得候補" : item.publicationStatus === "rejected" ? "却下" : "公開中"}
+                  </span>
+                )}
+              </div>
               <h3 className="mt-1 break-words text-lg font-bold">{String(item.name ?? item.product ?? item.id)}</h3>
               <p className="mt-1 break-words text-sm text-slate-300">{String(item.shop ?? item.status ?? item.searchWord ?? "")}</p>
+              {(resource === "lottery" || resource === "restock") && <div className="mt-3 space-y-1 text-sm text-slate-400">
+                <p>日時：{String(item.deadlineAt ?? item.saleStart ?? item.restockAt ?? item.deadline ?? item.date ?? "未設定")}</p>
+                <p>照合：{item.matchStatus === "matched" || item.productId ? `商品マスタ一致（${String(item.productId)}）` : "未照合候補"}</p>
+                {item.fetchedAt && <p>取得：{String(item.fetchedAt)}</p>}
+                {item.officialUrl && <a href={String(item.officialUrl)} target="_blank" rel="noopener noreferrer" className="inline-block min-h-11 py-2 font-bold text-blue-300 underline">公式ページを開く ↗</a>}
+              </div>}
+              {(resource === "lottery" || resource === "restock") && item.publicationStatus === "pending" && <div className="mt-4 grid grid-cols-2 gap-3">
+                <button onClick={() => void review(item, "approve")} className="min-h-12 rounded-xl bg-emerald-600 px-4 font-bold hover:bg-emerald-500">承認</button>
+                <button onClick={() => void review(item, "reject")} className="min-h-12 rounded-xl border border-amber-500/60 px-4 font-bold text-amber-200 hover:bg-amber-500/10">却下</button>
+              </div>}
               <div className="mt-4 grid grid-cols-2 gap-3">
                 <button onClick={() => openEdit(item)} className="min-h-12 rounded-xl bg-blue-600 px-4 font-bold hover:bg-blue-500">編集</button>
                 <button onClick={() => void remove(item)} className="min-h-12 rounded-xl border border-red-500/50 px-4 font-bold text-red-300 hover:bg-red-500/10">削除</button>
