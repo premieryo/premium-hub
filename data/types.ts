@@ -9,6 +9,7 @@ export const genres = [
 export type Genre = (typeof genres)[number];
 
 export type ProductType = "box" | "card" | "figure" | "toy" | "other";
+export type ProductCategory = "booster-box" | "collection-box";
 
 export const productImageSources = [
   "amazon",
@@ -35,6 +36,11 @@ export type Product = {
   type: ProductType;
   searchWord: string;
   releaseDate: string;
+  productCategory?: ProductCategory;
+  seriesNumber?: string;
+  retailPrice?: number;
+  officialUrl?: string;
+  releaseStatus?: "released" | "upcoming";
   priceTrackingEnabled?: boolean;
   jan?: string;
   modelNumber?: string;
@@ -92,6 +98,8 @@ export type RankingItem = InformationItem & {
   changeAmount?: number;
   changeRate?: number;
   updatedAt?: string;
+  productCategory?: ProductCategory;
+  retailPrice?: number;
 };
 
 export type PriceSnapshot = {

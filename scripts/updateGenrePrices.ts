@@ -3,6 +3,7 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import type { Genre, Product, RankingItem } from "../data/types";
 import { searchYahooItems, type YahooItem } from "../lib/api/yahoo";
 import { selectPriceTrackingProducts } from "../lib/price-tracking";
+import { evaluateProductIdentity, findMultipleItemExpression } from "../lib/commerce-matching";
 
 const SOURCE = "yahoo";
 const TIMEOUT_MS = 10_000;
@@ -118,7 +119,7 @@ function validateCandidate(product: Product, item: YahooItem) {
     "開封済み", "訳あり", "ダメージあり", "カード単品", "シングルカード", "パック単品",
     "1パック", "オリパ", "福袋", "中古", "カートン", "セット販売", "boxセット",
     "ボックスセット", "まとめ売り"].find((word) => title.includes(normalize(word)));
-  const quantity = title.match(/(\d+)(?:box|ボックス)/);
+  const quantity = findMultipleItemExpression(item.name);
 
   if (product.type !== "box") throw new Error("追跡対象がBOXではありません。");
   if (!core || !title.includes(core)) throw new Error("対象商品名が一致しません。");
@@ -126,7 +127,9 @@ function validateCandidate(product: Product, item: YahooItem) {
     throw new Error("未開封BOXの根拠が不足しています。");
   }
   if (rejected) throw new Error(`除外語を検出: ${rejected}`);
-  if (quantity && Number(quantity[1]) !== 1) throw new Error(`複数BOXを検出: ${quantity[0]}`);
+  if (quantity) throw new Error(`複数商品を検出: ${quantity}`);
+  const identity = evaluateProductIdentity(product, item);
+  if (!identity.accepted) throw new Error(identity.reason);
   if (item.condition !== "new") throw new Error("新品ではありません。");
   if (!item.inStock) throw new Error("在庫切れです。");
   if (!Number.isInteger(item.price) || item.price <= 0) throw new Error("価格が不正です。");

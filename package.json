@@ -10,6 +10,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "test": "tsx --test lib/*.test.ts",
     "update:prices": "tsx scripts/update.ts",
     "update:prices:apply": "tsx scripts/update.ts --apply",
     "update:pokemon": "tsx scripts/updatePokemon.ts",

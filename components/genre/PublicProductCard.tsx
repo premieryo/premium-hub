@@ -1,60 +1,16 @@
 import type { Product } from "@/data/types";
 import ProductImage from "@/components/product/ProductImage";
+import { isReleasedInTokyo } from "@/lib/price-tracking";
 
 export default function PublicProductCard({ product }: { product: Product }) {
-  const releaseDate = new Intl.DateTimeFormat("ja-JP", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  }).format(new Date(`${product.releaseDate}T00:00:00`));
-
-  return (
-    <article className="flex h-full flex-col rounded-2xl border border-white/10 bg-slate-900 p-5 transition hover:-translate-y-1">
-      <div className="flex items-start justify-between gap-3">
-        <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-bold text-slate-200">
-          {product.type.toUpperCase()}
-        </span>
-        <span className="text-xs text-slate-400">発売日 {releaseDate}</span>
-      </div>
-
-      <div className="mt-4 flex items-start gap-4">
-        <ProductImage
-          alt={product.imageAlt || product.name}
-          fallbackIcon="◇"
-          className="h-20 w-20"
-        />
-        <h3 className="min-w-0 flex-1 text-xl font-black text-white">{product.name}</h3>
-      </div>
-
-      <dl className="mt-4 space-y-2 text-sm">
-        <div className="flex items-center justify-between gap-4">
-          <dt className="text-slate-400">現在価格</dt>
-          <dd className="font-bold text-green-400">
-            {typeof product.marketPrice === "number"
-              ? `${product.marketPrice.toLocaleString()}円`
-              : "価格未取得"}
-          </dd>
-        </div>
-        <div className="flex items-start justify-between gap-4">
-          <dt className="shrink-0 text-slate-400">ショップ</dt>
-          <dd className="text-right text-slate-200">{product.shop || "未登録"}</dd>
-        </div>
-      </dl>
-
-      {product.url ? (
-        <a
-          href={product.url}
-          target="_blank"
-          rel="noopener noreferrer nofollow"
-          className="mt-5 block min-h-12 rounded-xl bg-blue-600 px-4 py-3 text-center text-sm font-bold text-white hover:bg-blue-500"
-        >
-          商品ページを見る ↗
-        </a>
-      ) : (
-        <span className="mt-5 block min-h-12 rounded-xl bg-slate-800 px-4 py-3 text-center text-sm font-bold text-slate-500">
-          商品リンク未登録
-        </span>
-      )}
-    </article>
-  );
+  const released = isReleasedInTokyo(product);
+  const releaseDate = new Intl.DateTimeFormat("ja-JP", { year: "numeric", month: "long", day: "numeric" }).format(new Date(`${product.releaseDate}T00:00:00+09:00`));
+  const priceMessage = !released ? "相場集計は発売後に開始予定" : product.priceTrackingEnabled ? "現在相場を確認中" : "相場集計前";
+  return <article className="flex h-full min-w-0 flex-col rounded-2xl border border-white/10 bg-slate-900 p-5">
+    <div className="flex flex-wrap items-center justify-between gap-2 text-xs"><span className="rounded-full bg-white/10 px-3 py-1 font-bold text-slate-200">{product.seriesNumber || (product.productCategory === "collection-box" ? "限定・セット商品" : "通常BOX")}</span><span className={released ? "text-emerald-300" : "text-amber-300"}>{released ? "発売済み" : "発売予定"}</span></div>
+    <div className="mt-4 flex min-w-0 items-start gap-4"><ProductImage alt={product.imageAlt || product.name} fallbackIcon="📦" className="h-20 w-20 shrink-0" /><div className="min-w-0"><h3 className="break-words text-lg font-black text-white">{product.name}</h3><p className="mt-2 text-xs text-slate-400">発売日 {releaseDate}</p></div></div>
+    <dl className="mt-5 space-y-3 text-sm"><Row label="定価" value={product.retailPrice ? `${product.retailPrice.toLocaleString()}円` : "公式価格を確認中"} /><Row label="現在相場" value={product.marketPrice ? `${product.marketPrice.toLocaleString()}円` : priceMessage} accent={Boolean(product.marketPrice)} /></dl>
+    {product.officialUrl && <a href={product.officialUrl} target="_blank" rel="noopener noreferrer" className="mt-5 min-h-11 rounded-xl border border-blue-500/50 px-4 py-3 text-center text-sm font-bold text-blue-300">公式商品情報を見る</a>}
+  </article>;
 }
+function Row({ label, value, accent = false }: { label: string; value: string; accent?: boolean }) { return <div className="flex items-start justify-between gap-4"><dt className="shrink-0 text-slate-400">{label}</dt><dd className={`break-words text-right font-bold ${accent ? "text-emerald-300" : "text-slate-200"}`}>{value}</dd></div>; }

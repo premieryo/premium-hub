@@ -8,6 +8,7 @@ import ProductGrid from "./ProductGrid";
 
 export default function GenreTopPage({ config, data }: { config: GenreConfig; data: GenreData }) {
   const acceptingCount = data.lottery.filter((item) => item.status === "受付中").length;
+  const isCardGenre = ["pokemon", "onepiece", "dragonball"].includes(config.slug);
 
   return (
     <GenrePageFrame config={config} home>
@@ -15,6 +16,13 @@ export default function GenreTopPage({ config, data }: { config: GenreConfig; da
         <h1 className="text-3xl font-bold md:text-4xl">{config.icon} {config.name}</h1>
         <p className="mt-3 text-sm text-slate-300 md:text-base">{config.description}</p>
       </header>
+
+      <nav className="mt-6 grid grid-cols-2 gap-3" aria-label={`${config.name}の商品・相場メニュー`}>
+        <SectionLink href={`/${config.slug}/products`} title="歴代BOX" text="通常BOXを探す" />
+        <SectionLink href={`/${config.slug}/ranking`} title="BOX相場" text="店頭の定価と比べる" />
+        {isCardGenre && <SectionLink href={`/${config.slug}/collections`} title="コレクションBOX" text="限定・セット商品を探す" />}
+        {isCardGenre && <SectionLink href={`/${config.slug}/collection-ranking`} title="コレクション相場" text="限定品の相場を見る" />}
+      </nav>
 
       <section className="mt-8 grid grid-cols-2 gap-3 md:grid-cols-4">
         <Stat label="抽選情報" value={data.lottery.length} color="text-red-400" />

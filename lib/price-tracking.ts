@@ -1,4 +1,5 @@
 import type { Genre, Product } from "@/data/types";
+import { getProductCategory } from "./product-categories";
 
 const limitedGenres = new Set<Genre>(["pokemon", "onepiece", "dragonball"]);
 const CARD_GENRE_LIMIT = 10;
@@ -31,6 +32,7 @@ export function selectPriceTrackingProducts(
   const eligible = products
     .filter((product) => product.genre === genre)
     .filter((product) => product.priceTrackingEnabled === true)
+    .filter((product) => !limitedGenres.has(genre) || getProductCategory(product) === "booster-box")
     .filter((product) => isReleasedInTokyo(product, now))
     .sort((a, b) => b.releaseDate.localeCompare(a.releaseDate) || a.id.localeCompare(b.id));
 

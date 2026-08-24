@@ -23,6 +23,8 @@ export async function GET(request: Request) {
       revalidatePath(`/${genre}`);
       revalidatePath(`/${genre}/products`);
       revalidatePath(`/${genre}/ranking`);
+      revalidatePath(`/${genre}/collections`);
+      revalidatePath(`/${genre}/collection-ranking`);
     }
     const totals = summaries.reduce(
       (result, item) => ({

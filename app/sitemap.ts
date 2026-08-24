@@ -31,5 +31,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
         priority,
       })),
     ),
+    ...(["pokemon", "onepiece", "dragonball"] as const).flatMap((genre) => [
+      { url: `${baseUrl}/${genre}/collections`, changeFrequency: "weekly" as const, priority: 0.7 },
+      { url: `${baseUrl}/${genre}/collection-ranking`, changeFrequency: "daily" as const, priority: 0.8 },
+    ]),
   ];
 }
