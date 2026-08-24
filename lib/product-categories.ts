@@ -12,6 +12,12 @@ export function productsInCategory(products: Product[], category: ProductCategor
   return products.filter((product) => getProductCategory(product) === category);
 }
 
+export function recentProductsInCategory(products: Product[], category: ProductCategory, limit = 15) {
+  return productsInCategory(products, category)
+    .sort((a, b) => b.releaseDate.localeCompare(a.releaseDate) || a.id.localeCompare(b.id))
+    .slice(0, limit);
+}
+
 export function rankingInCategory(ranking: RankingItem[], products: Product[], category: ProductCategory) {
   const allowed = new Set(productsInCategory(products, category).map((product) => product.id));
   return ranking.filter((item) => allowed.has(item.id));

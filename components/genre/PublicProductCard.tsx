@@ -9,7 +9,7 @@ export default function PublicProductCard({ product }: { product: Product }) {
   return <article className="flex h-full min-w-0 flex-col rounded-2xl border border-white/10 bg-slate-900 p-5">
     <div className="flex flex-wrap items-center justify-between gap-2 text-xs"><span className="rounded-full bg-white/10 px-3 py-1 font-bold text-slate-200">{product.seriesNumber || (product.productCategory === "collection-box" ? "限定・セット商品" : "通常BOX")}</span><span className={released ? "text-emerald-300" : "text-amber-300"}>{released ? "発売済み" : "発売予定"}</span></div>
     <div className="mt-4 flex min-w-0 items-start gap-4"><ProductImage alt={product.imageAlt || product.name} fallbackIcon="📦" className="h-20 w-20 shrink-0" /><div className="min-w-0"><h3 className="break-words text-lg font-black text-white">{product.name}</h3><p className="mt-2 text-xs text-slate-400">発売日 {releaseDate}</p></div></div>
-    <dl className="mt-5 space-y-3 text-sm"><Row label="定価" value={product.retailPrice ? `${product.retailPrice.toLocaleString()}円` : "公式価格を確認中"} /><Row label="現在相場" value={product.marketPrice ? `${product.marketPrice.toLocaleString()}円` : priceMessage} accent={Boolean(product.marketPrice)} /></dl>
+    <dl className="mt-5 space-y-3 text-sm">{product.retailPrice ? <Row label="定価" value={`${product.retailPrice.toLocaleString()}円`} /> : null}<Row label="現在相場" value={product.marketPrice ? `${product.marketPrice.toLocaleString()}円` : priceMessage} accent={Boolean(product.marketPrice)} /></dl>
     {product.officialUrl && <a href={product.officialUrl} target="_blank" rel="noopener noreferrer" className="mt-5 min-h-11 rounded-xl border border-blue-500/50 px-4 py-3 text-center text-sm font-bold text-blue-300">公式商品情報を見る</a>}
   </article>;
 }

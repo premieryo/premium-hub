@@ -15,6 +15,8 @@
     "update:prices:apply": "tsx scripts/update.ts --apply",
     "update:pokemon": "tsx scripts/updatePokemon.ts",
     "test:yahoo": "tsx scripts/testYahoo.ts",
+    "catalog:dry-run": "tsx --env-file=../.env.local scripts/syncCardCatalog.ts",
+    "catalog:apply": "tsx --env-file=../.env.local scripts/syncCardCatalog.ts --apply",
     "migrate:supabase": "tsx --env-file=.env.local scripts/migrateJsonToSupabase.ts"
   },
   "dependencies": {

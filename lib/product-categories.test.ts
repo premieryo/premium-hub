@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { compareWithRetailPrice } from "./product-categories";
+import { officialCardCatalog, mergeOfficialCardCatalog } from "../data/card-catalog";
+import type { Product } from "../data/types";
+import { compareWithRetailPrice, productsInCategory, recentProductsInCategory } from "./product-categories";
 
 test("retail comparison keeps the +50 percent premium boundary", () => {
   assert.equal(compareWithRetailPrice(8100, 5400)?.tone, "fire");
@@ -20,4 +22,40 @@ test("retail comparison classifies values below -10 percent as below retail", ()
 
 test("retail comparison returns null without a confirmed retail price", () => {
   assert.equal(compareWithRetailPrice(5400, undefined), null);
+});
+
+test("official catalog has unique IDs and exactly 15 booster products per card genre", () => {
+  assert.equal(new Set(officialCardCatalog.map((product) => `${product.genre}:${product.id}`)).size, officialCardCatalog.length);
+  for (const genre of ["pokemon", "onepiece", "dragonball"] as const) {
+    assert.equal(officialCardCatalog.filter((product) => product.genre === genre && product.productCategory === "booster-box").length, 15);
+  }
+});
+
+test("official catalog keeps every new product tracking disabled", () => {
+  assert.ok(officialCardCatalog.every((product) => product.priceTrackingEnabled === false));
+});
+
+test("fallback merge preserves existing commerce data and tracking", () => {
+  const existing: Product = { id: "storm-emeralda-box", genre: "pokemon", name: "existing", type: "box", searchWord: "existing", releaseDate: "2026-07-31", marketPrice: 17000, shop: "shop", url: "https://example.com", priceTrackingEnabled: true };
+  const merged = mergeOfficialCardCatalog([existing], "pokemon").find((product) => product.id === existing.id);
+  assert.equal(merged?.marketPrice, 17000);
+  assert.equal(merged?.shop, "shop");
+  assert.equal(merged?.priceTrackingEnabled, true);
+  assert.equal(merged?.productCategory, "booster-box");
+});
+
+test("fallback merge restores the five production tracking products", () => {
+  const tracked = (["pokemon", "onepiece", "dragonball"] as const)
+    .flatMap((genre) => mergeOfficialCardCatalog([], genre))
+    .filter((product) => product.priceTrackingEnabled === true);
+  assert.equal(tracked.length, 5);
+});
+
+test("recent product view separates categories and limits booster products to 15", () => {
+  const pokemon = mergeOfficialCardCatalog([], "pokemon");
+  const boosters = recentProductsInCategory(pokemon, "booster-box", 15);
+  assert.equal(boosters.length, 15);
+  assert.ok(boosters.every((product) => product.productCategory === "booster-box"));
+  assert.ok(boosters.every((product, index) => index === 0 || boosters[index - 1].releaseDate >= product.releaseDate));
+  assert.equal(productsInCategory(pokemon, "collection-box").length, 5);
 });

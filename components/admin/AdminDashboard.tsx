@@ -141,6 +141,16 @@ export default function AdminDashboard() {
               </div>
               <h3 className="mt-1 break-words text-lg font-bold">{String(item.name ?? item.product ?? item.id)}</h3>
               <p className="mt-1 break-words text-sm text-slate-300">{String(item.shop ?? item.status ?? item.searchWord ?? "")}</p>
+              {resource === "products" && <div className="mt-3 grid gap-1 text-sm text-slate-400 sm:grid-cols-2">
+                <p>カテゴリ：{String(item.productCategory ?? "未分類")}</p>
+                <p>シリーズ：{String(item.seriesNumber ?? "—")}</p>
+                <p>発売日：{String(item.releaseDate ?? "—")}</p>
+                <p>定価：{typeof item.retailPrice === "number" ? `${item.retailPrice.toLocaleString()}円` : "—"}</p>
+                <p>JAN：{String(item.jan ?? "—")}</p>
+                <p>型番：{String(item.modelNumber ?? "—")}</p>
+                <p>価格追跡：{item.priceTrackingEnabled === true ? "ON" : "OFF"}</p>
+                {item.officialUrl && <a href={String(item.officialUrl)} target="_blank" rel="noopener noreferrer" className="min-h-11 py-2 font-bold text-blue-300 underline">公式ページを開く ↗</a>}
+              </div>}
               {(resource === "lottery" || resource === "restock") && <div className="mt-3 space-y-1 text-sm text-slate-400">
                 <p>日時：{String(item.deadlineAt ?? item.saleStart ?? item.restockAt ?? item.deadline ?? item.date ?? "未設定")}</p>
                 <p>照合：{item.matchStatus === "matched" || item.productId ? `商品マスタ一致（${String(item.productId)}）` : "未照合候補"}</p>

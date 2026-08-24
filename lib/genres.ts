@@ -13,6 +13,7 @@ import { createPublicClient } from "@/lib/supabase/public";
 import type { AdminResource } from "./admin-data";
 import { selectPublicRankingProducts } from "./price-tracking";
 import { isPublicInformationItem } from "./information-moderation";
+import { fallbackCardRanking, mergeOfficialCardCatalog } from "@/data/card-catalog";
 
 export function isGenre(value: string): value is Genre {
   return genres.includes(value as Genre);
@@ -111,6 +112,10 @@ export async function getGenreContext(value: string) {
       readGenreJson<GenreData["restock"]>(value, "restock.json"),
       readGenreJson<GenreData["ranking"]>(value, "ranking.json"),
     ]);
+    products = mergeOfficialCardCatalog(products, value);
+    const fallbackRankingById = new Map(ranking.map((item) => [item.id, item]));
+    for (const item of fallbackCardRanking.filter((item) => item.genre === value)) fallbackRankingById.set(item.id, item);
+    ranking = [...fallbackRankingById.values()];
   }
   const now = new Date();
   lottery = filterPublicLottery(lottery, now);
