@@ -35,6 +35,20 @@ test("official catalog keeps every new product tracking disabled", () => {
   assert.ok(officialCardCatalog.every((product) => product.priceTrackingEnabled === false));
 });
 
+test("official booster retail prices only use official sales evidence", () => {
+  const pricedBoosters = officialCardCatalog.filter(
+    (product) => product.productCategory === "booster-box" && product.retailPrice,
+  );
+  assert.equal(pricedBoosters.filter((product) => product.genre === "pokemon").length, 1);
+  assert.equal(pricedBoosters.filter((product) => product.genre === "onepiece").length, 4);
+  assert.equal(pricedBoosters.filter((product) => product.genre === "dragonball").length, 12);
+  assert.ok(pricedBoosters.every((product) =>
+    product.officialUrl.includes("pokemon-card.com") || product.officialUrl.includes("p-bandai.jp")));
+  assert.equal(pricedBoosters.find((product) => product.id === "story-booster-01-st01-box")?.retailPrice, 6600);
+  assert.equal(pricedBoosters.find((product) => product.id === "dragonball-sb02")?.retailPrice, 7920);
+  assert.equal(pricedBoosters.find((product) => product.id === "world-strongest-warriors-op17-box")?.retailPrice, 5760);
+});
+
 test("fallback merge preserves existing commerce data and tracking", () => {
   const existing: Product = { id: "storm-emeralda-box", genre: "pokemon", name: "existing", type: "box", searchWord: "existing", releaseDate: "2026-07-31", marketPrice: 17000, shop: "shop", url: "https://example.com", priceTrackingEnabled: true };
   const merged = mergeOfficialCardCatalog([existing], "pokemon").find((product) => product.id === existing.id);
