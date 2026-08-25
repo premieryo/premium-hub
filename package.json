@@ -17,6 +17,7 @@
     "test:yahoo": "tsx scripts/testYahoo.ts",
     "catalog:dry-run": "tsx --env-file=../.env.local scripts/syncCardCatalog.ts",
     "catalog:apply": "tsx --env-file=../.env.local scripts/syncCardCatalog.ts --apply",
+    "audit:card-prices": "tsx --env-file=../.env.local scripts/auditCardPrices.ts",
     "migrate:supabase": "tsx --env-file=.env.local scripts/migrateJsonToSupabase.ts"
   },
   "dependencies": {

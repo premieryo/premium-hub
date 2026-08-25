@@ -110,7 +110,7 @@ function normalize(value: string) {
   return value.normalize("NFKC").toLowerCase().replace(/\s+/g, "");
 }
 
-function validateCandidate(product: Product, item: YahooItem) {
+export function validateCandidate(product: Product, item: YahooItem) {
   const title = normalize(item.name);
   const core = normalize(product.searchWord).replace(/box|ボックス/g, "");
   const sealed = ["未開封", "シュリンク付き", "シュリンク付", "テープ付き", "テープ付"]
@@ -120,6 +120,9 @@ function validateCandidate(product: Product, item: YahooItem) {
     "1パック", "オリパ", "福袋", "中古", "カートン", "セット販売", "boxセット",
     "ボックスセット", "まとめ売り"].find((word) => title.includes(normalize(word)));
   const quantity = findMultipleItemExpression(item.name);
+  const expectedSeries = product.seriesNumber?.normalize("NFKC").toLowerCase().replace(/-/g, "");
+  const titleSeries = [...item.name.normalize("NFKC").toLowerCase().matchAll(/\b(op|eb|prb|fb|sb|st)-?(\d{2})\b/g)]
+    .map((match) => ({ prefix: match[1], value: `${match[1]}${match[2]}` }));
 
   if (product.type !== "box") throw new Error("追跡対象がBOXではありません。");
   if (!core || !title.includes(core)) throw new Error("対象商品名が一致しません。");
@@ -128,6 +131,13 @@ function validateCandidate(product: Product, item: YahooItem) {
   }
   if (rejected) throw new Error(`除外語を検出: ${rejected}`);
   if (quantity) throw new Error(`複数商品を検出: ${quantity}`);
+  if (expectedSeries && (product.genre === "onepiece" || product.genre === "dragonball")) {
+    const expectedPrefix = expectedSeries.match(/^[a-z]+/)?.[0];
+    if (!titleSeries.some((series) => series.value === expectedSeries)) throw new Error(`シリーズ番号${product.seriesNumber}の完全一致なし`);
+    if (titleSeries.some((series) => series.prefix === expectedPrefix && series.value !== expectedSeries)) {
+      throw new Error("異なるシリーズ番号を検出");
+    }
+  }
   const identity = evaluateProductIdentity(product, item);
   if (!identity.accepted) throw new Error(identity.reason);
   if (item.condition !== "new") throw new Error("新品ではありません。");

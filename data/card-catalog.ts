@@ -21,6 +21,7 @@ function collection(product: Omit<CardCatalogProduct, "type" | "productCategory"
 }
 
 export const officialCardCatalog: CardCatalogProduct[] = [
+  booster({ id: "30th-celebration-box", genre: "pokemon", name: "ポケモンカードゲーム MEGA 拡張パック「30th CELEBRATION」BOX", searchWord: "30th CELEBRATION BOX", releaseDate: "2026-09-16", retailPrice: 7200, officialUrl: "https://www.30th.pokemon-card.com/product/m6a", releaseStatus: "upcoming" }),
   booster({ id: "storm-emeralda-box", genre: "pokemon", name: "ポケモンカードゲーム MEGA 拡張パック「ストームエメラルダ」BOX", searchWord: "ストームエメラルダ BOX", releaseDate: "2026-07-31", officialUrl: pokemonProductsUrl, releaseStatus: "released" }),
   booster({ id: "abyss-eye-box", genre: "pokemon", name: "拡張パック「アビスアイ」", searchWord: "アビスアイ BOX", releaseDate: "2026-05-22", officialUrl: pokemonProductsUrl, releaseStatus: "released" }),
   booster({ id: "ninja-spinner-box", genre: "pokemon", name: "拡張パック「ニンジャスピナー」", searchWord: "ニンジャスピナー BOX", releaseDate: "2026-03-13", officialUrl: pokemonProductsUrl, releaseStatus: "released" }),

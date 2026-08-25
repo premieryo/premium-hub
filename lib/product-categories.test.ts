@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { officialCardCatalog, mergeOfficialCardCatalog } from "../data/card-catalog";
 import type { Product } from "../data/types";
-import { compareWithRetailPrice, productsInCategory, recentProductsInCategory } from "./product-categories";
+import { compareWithRetailPrice, productsInCategory, recentProductsInCategory, splitBoosterProductsByRelease } from "./product-categories";
 
 test("retail comparison keeps the +50 percent premium boundary", () => {
   assert.equal(compareWithRetailPrice(8100, 5400)?.tone, "fire");
@@ -24,11 +24,11 @@ test("retail comparison returns null without a confirmed retail price", () => {
   assert.equal(compareWithRetailPrice(5400, undefined), null);
 });
 
-test("official catalog has unique IDs and exactly 15 booster products per card genre", () => {
+test("official catalog has unique IDs and the expected booster products per card genre", () => {
   assert.equal(new Set(officialCardCatalog.map((product) => `${product.genre}:${product.id}`)).size, officialCardCatalog.length);
-  for (const genre of ["pokemon", "onepiece", "dragonball"] as const) {
-    assert.equal(officialCardCatalog.filter((product) => product.genre === genre && product.productCategory === "booster-box").length, 15);
-  }
+  assert.equal(officialCardCatalog.filter((product) => product.genre === "pokemon" && product.productCategory === "booster-box").length, 16);
+  assert.equal(officialCardCatalog.filter((product) => product.genre === "onepiece" && product.productCategory === "booster-box").length, 15);
+  assert.equal(officialCardCatalog.filter((product) => product.genre === "dragonball" && product.productCategory === "booster-box").length, 15);
 });
 
 test("official catalog keeps every new product tracking disabled", () => {
@@ -58,4 +58,13 @@ test("recent product view separates categories and limits booster products to 15
   assert.ok(boosters.every((product) => product.productCategory === "booster-box"));
   assert.ok(boosters.every((product, index) => index === 0 || boosters[index - 1].releaseDate >= product.releaseDate));
   assert.equal(productsInCategory(pokemon, "collection-box").length, 5);
+});
+
+test("products view separates upcoming boosters before limiting released boosters", () => {
+  const pokemon = mergeOfficialCardCatalog([], "pokemon");
+  const result = splitBoosterProductsByRelease(pokemon, 15, new Date("2026-08-25T00:00:00+09:00"));
+  assert.deepEqual(result.upcoming.map((product) => product.id), ["30th-celebration-box"]);
+  assert.equal(result.released.length, 15);
+  assert.ok(result.released.some((product) => product.id === "battle-partners-box"));
+  assert.ok(result.released.every((product) => product.productCategory === "booster-box"));
 });

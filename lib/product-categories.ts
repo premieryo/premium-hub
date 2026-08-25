@@ -18,6 +18,18 @@ export function recentProductsInCategory(products: Product[], category: ProductC
     .slice(0, limit);
 }
 
+export function splitBoosterProductsByRelease(products: Product[], releasedLimit = 15, now = new Date()) {
+  const tokyoDate = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Tokyo", year: "numeric", month: "2-digit", day: "2-digit",
+  }).format(now);
+  const boosters = productsInCategory(products, "booster-box")
+    .sort((a, b) => b.releaseDate.localeCompare(a.releaseDate) || a.id.localeCompare(b.id));
+  return {
+    upcoming: boosters.filter((product) => product.releaseDate > tokyoDate),
+    released: boosters.filter((product) => product.releaseDate <= tokyoDate).slice(0, releasedLimit),
+  };
+}
+
 export function rankingInCategory(ranking: RankingItem[], products: Product[], category: ProductCategory) {
   const allowed = new Set(productsInCategory(products, category).map((product) => product.id));
   return ranking.filter((item) => allowed.has(item.id));

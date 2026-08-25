@@ -50,7 +50,7 @@ test("Yahoo価格がある追跡ON商品のリンク文言", () => {
 
 test("カード3ジャンルのbooster/collection全商品でURLを生成する", () => {
   const supported = officialCardCatalog.filter(({ genre }) => ["pokemon", "onepiece", "dragonball"].includes(genre));
-  assert.equal(supported.length, 57);
+  assert.equal(supported.length, 58);
   assert.ok(supported.every((item) => buildSnkrdunkSearchUrl(item)?.startsWith("https://snkrdunk.com/search/?keywords=")));
 });
 
