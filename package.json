@@ -18,6 +18,8 @@
     "catalog:dry-run": "tsx --env-file=../.env.local scripts/syncCardCatalog.ts",
     "catalog:apply": "tsx --env-file=../.env.local scripts/syncCardCatalog.ts --apply",
     "audit:card-prices": "tsx --env-file=../.env.local scripts/auditCardPrices.ts",
+    "cron:rotation-dry-run": "tsx --env-file=../.env.local scripts/simulatePriceRotation.ts",
+    "cron:cursor-init": "tsx --env-file=../.env.local scripts/initializePriceRotationCursor.ts",
     "migrate:supabase": "tsx --env-file=.env.local scripts/migrateJsonToSupabase.ts"
   },
   "dependencies": {

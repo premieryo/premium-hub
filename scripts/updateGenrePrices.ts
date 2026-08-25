@@ -4,6 +4,7 @@ import type { Genre, Product, RankingItem } from "../data/types";
 import { searchYahooItems, type YahooItem } from "../lib/api/yahoo";
 import { selectPriceTrackingProducts } from "../lib/price-tracking";
 import { evaluateProductIdentity, findMultipleItemExpression } from "../lib/commerce-matching";
+import { PRICE_MIN_REMAINING_MS } from "../lib/price-rotation";
 
 const SOURCE = "yahoo";
 const TIMEOUT_MS = 10_000;
@@ -14,7 +15,13 @@ const LEASE_MS = 30 * 60_000;
 type Row<T> = { item_id: string; data: T; created_at: string; updated_at: string };
 type Lease = { id: string; expiresAt: string };
 type ProductWithLease = Product & { _priceUpdateLease?: Lease };
-type Options = { dryRun?: boolean; useRunLease?: boolean; allowExistingToday?: boolean };
+export type PriceUpdateOptions = {
+  dryRun?: boolean;
+  useRunLease?: boolean;
+  allowExistingToday?: boolean;
+  productIds?: string[];
+  deadlineAt?: number;
+};
 
 export type PriceUpdateResult = {
   productId: string;
@@ -26,7 +33,8 @@ export type PriceUpdateResult = {
   changeAmount?: number;
   changeRate?: number;
   shop?: string;
-  url?: string;
+  yahooFetchMs?: number;
+  processingMs?: number;
 };
 
 export type PriceUpdateSummary = {
@@ -96,12 +104,16 @@ function tokyoDate(now: Date) {
   return `${fields.year}-${fields.month}-${fields.day}`;
 }
 
+export function tokyoDayRange(now = new Date()) {
+  const start = new Date(`${tokyoDate(now)}T00:00:00+09:00`);
+  return { start: start.toISOString(), end: new Date(start.getTime() + 86_400_000).toISOString() };
+}
+
 async function hasHistoryToday(client: SupabaseClient, genre: Genre, productId: string) {
-  const start = new Date(`${tokyoDate(new Date())}T00:00:00+09:00`);
-  const end = new Date(start.getTime() + 86_400_000);
+  const range = tokyoDayRange();
   const result = await client.from("price_history").select("id", { count: "exact", head: true })
     .eq("genre", genre).eq("product_id", productId).eq("source", SOURCE)
-    .gte("fetched_at", start.toISOString()).lt("fetched_at", end.toISOString());
+    .gte("fetched_at", range.start).lt("fetched_at", range.end);
   if (result.error) throw new Error(`当日履歴確認失敗: ${result.error.message}`);
   return (result.count ?? 0) > 0;
 }
@@ -253,11 +265,13 @@ async function releaseLease(client: SupabaseClient, genre: Genre, productId: str
   if (result.error) throw new Error(`リース解放失敗: ${result.error.message}`);
 }
 
-export async function updateGenrePrices(genre: Genre, options: Options = {}): Promise<PriceUpdateSummary> {
+export async function updateGenrePrices(genre: Genre, options: PriceUpdateOptions = {}): Promise<PriceUpdateSummary> {
   const dryRun = options.dryRun ?? true;
   const client = adminClient();
   const [allProductRows, allRankingRows] = await Promise.all([productRows(client, genre), rankingRows(client, genre)]);
-  const products = selectPriceTrackingProducts(genre, allProductRows.map((row) => row.data));
+  const selectedIds = options.productIds ? new Set(options.productIds) : null;
+  const products = selectPriceTrackingProducts(genre, allProductRows.map((row) => row.data))
+    .filter((product) => !selectedIds || selectedIds.has(product.id));
   const productMap = new Map(allProductRows.map((row) => [row.item_id, row]));
   const rankingMap = new Map(allRankingRows.map((row) => [row.item_id, row]));
   const results: PriceUpdateResult[] = [];
@@ -278,14 +292,30 @@ export async function updateGenrePrices(genre: Genre, options: Options = {}): Pr
 
   try {
     for (const [index, product] of products.entries()) {
+      const productStartedAt = Date.now();
+      let yahooFetchMs: number | undefined;
+      let attemptedYahoo = false;
       try {
+        if (options.deadlineAt && options.deadlineAt - productStartedAt < PRICE_MIN_REMAINING_MS) {
+          const reason = "Function残り時間が少ないため次回へ延期";
+          console.warn(`  [SKIP] ${product.name}: ${reason}`);
+          results.push({ productId: product.id, productName: product.name, status: "skipped", reason, processingMs: 0 });
+          continue;
+        }
         if (!dryRun && !options.allowExistingToday && await hasHistoryToday(client, genre, product.id)) {
           const reason = "本日（JST）のYahoo履歴が既に存在するためskip";
           console.log(`  [SKIP] ${product.name}: ${reason}`);
           results.push({ productId: product.id, productName: product.name, status: "skipped", reason });
           continue;
         }
-        const selected = (await searchYahooItems(product.searchWord, { productType: product.type, timeoutMs: TIMEOUT_MS }))[0];
+        const fetchStartedAt = Date.now();
+        attemptedYahoo = true;
+        let selected: YahooItem | undefined;
+        try {
+          selected = (await searchYahooItems(product.searchWord, { productType: product.type, timeoutMs: TIMEOUT_MS }))[0];
+        } finally {
+          yahooFetchMs = Date.now() - fetchStartedAt;
+        }
         if (!selected) throw new Error("一致する未開封BOXがありません。");
         validateCandidate(product, selected);
         const ranking = rankingMap.get(product.id);
@@ -300,13 +330,15 @@ export async function updateGenrePrices(genre: Genre, options: Options = {}): Pr
         }
         results.push({ productId: product.id, productName: product.name, status: "succeeded",
           previousPrice: previous, currentPrice: selected.price, changeAmount: plan.changeAmount,
-          changeRate: plan.changeRate, shop: selected.seller.name, url: selected.url });
+          changeRate: plan.changeRate, shop: selected.seller.name,
+          yahooFetchMs, processingMs: Date.now() - productStartedAt });
       } catch (error) {
         const reason = message(error);
         console.error(`  [FAILED] ${product.name}: ${reason}`);
-        results.push({ productId: product.id, productName: product.name, status: "failed", reason });
+        results.push({ productId: product.id, productName: product.name, status: "failed", reason,
+          yahooFetchMs, processingMs: Date.now() - productStartedAt });
       }
-      if (index < products.length - 1) await wait(INTERVAL_MS);
+      if (attemptedYahoo && index < products.length - 1) await wait(INTERVAL_MS);
     }
   } finally {
     if (lease && leaseProduct) await releaseLease(client, genre, leaseProduct.id, lease.id);

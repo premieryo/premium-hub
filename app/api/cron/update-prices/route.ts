@@ -18,7 +18,8 @@ export async function GET(request: Request) {
   }
 
   try {
-    const summaries = await updateCardPrices({ dryRun: false, useRunLease: true });
+    const run = await updateCardPrices({ dryRun: false, useRunLease: true });
+    const summaries = run.summaries;
     for (const genre of ["pokemon", "onepiece", "dragonball"]) {
       revalidatePath(`/${genre}`);
       revalidatePath(`/${genre}/products`);
@@ -35,7 +36,9 @@ export async function GET(request: Request) {
       }),
       { total: 0, succeeded: 0, skipped: 0, failed: 0 },
     );
-    const response = { startedAt, finishedAt: new Date().toISOString(), ...totals, summaries };
+    const response = { startedAt, finishedAt: new Date().toISOString(), batchSize: run.batchSize,
+      selectedProductIds: run.selectedProductIds, elapsedMs: run.elapsedMs, nextCursor: run.nextCursor,
+      cursorRevision: run.cursorRevision, concurrent: run.concurrent, ...totals, summaries };
     console.log("[price-cron]", JSON.stringify(response));
     return NextResponse.json(response, { status: totals.failed > 0 ? 207 : 200 });
   } catch (error) {
