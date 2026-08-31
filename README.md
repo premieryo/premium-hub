@@ -1,5 +1,11 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## ValueCommerce
+
+Yahoo!ショッピングの商品URLをValueCommerce経由にする場合は、サーバー環境に
+`VALUECOMMERCE_SID` と `VALUECOMMERCE_PID` を設定してください。両方が未設定、
+または数字のみの正しい形式でない場合は、通常のYahoo!ショッピングURLを使用します。
+
 ## Getting Started
 
 First, run the development server:

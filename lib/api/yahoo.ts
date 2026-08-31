@@ -23,6 +23,16 @@ export type YahooSearchOptions = {
   timeoutMs?: number;
 };
 
+export type YahooAffiliateConfig = {
+  sid?: string;
+  pid?: string;
+};
+
+const yahooItemSearchEndpoint =
+  "https://shopping.yahooapis.jp/ShoppingWebService/V3/itemSearch";
+const valueCommerceReferralEndpoint =
+  "https://ck.jp.ap.valuecommerce.com/servlet/referral";
+
 const excludedWords = [
   "オリパ", "くじ", "福袋", "シングルカード", "カード単品",
   "スリーブ", "デッキシールド", "プレイマット", "カードケース",
@@ -65,6 +75,28 @@ function scoreItem(item: YahooItem, query: string, productType: ProductType) {
   return score;
 }
 
+export function buildYahooItemSearchUrl(
+  params: URLSearchParams,
+  affiliate: YahooAffiliateConfig = {},
+  warn: (message: string) => void = console.warn,
+) {
+  const sid = affiliate.sid?.trim() ?? "";
+  const pid = affiliate.pid?.trim() ?? "";
+
+  if (/^\d+$/.test(sid) && /^\d+$/.test(pid)) {
+    const referralUrl = new URL(valueCommerceReferralEndpoint);
+    referralUrl.searchParams.set("sid", sid);
+    referralUrl.searchParams.set("pid", pid);
+    referralUrl.searchParams.set("vc_url", "");
+    params.set("affiliate_type", "vc");
+    params.set("affiliate_id", referralUrl.toString());
+  } else if (sid !== "" || pid !== "") {
+    warn("VALUECOMMERCE_SID/PID must both contain digits only; using regular Yahoo URLs.");
+  }
+
+  return `${yahooItemSearchEndpoint}?${params.toString()}`;
+}
+
 export async function searchYahooItems(
   query: string,
   options: YahooSearchOptions = {}
@@ -93,9 +125,10 @@ export async function searchYahooItems(
     in_stock: "true",
   });
 
-  const url =
-    "https://shopping.yahooapis.jp/ShoppingWebService/V3/itemSearch" +
-    `?${params.toString()}`;
+  const url = buildYahooItemSearchUrl(params, {
+    sid: process.env.VALUECOMMERCE_SID,
+    pid: process.env.VALUECOMMERCE_PID,
+  });
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), options.timeoutMs ?? 10_000);
