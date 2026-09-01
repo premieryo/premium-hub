@@ -11,9 +11,10 @@ export function isAdminResource(value: string): value is AdminResource {
 export type AdminField = {
   name: string;
   label: string;
-  type?: "text" | "number" | "date" | "datetime" | "url" | "select" | "checkbox" | "product-reference" | "hidden";
+  type?: "text" | "textarea" | "number" | "date" | "datetime" | "url" | "select" | "checkbox" | "product-reference" | "hidden";
   required?: boolean;
   options?: string[];
+  optionLabels?: Record<string, string>;
   placeholder?: string;
 };
 
@@ -65,7 +66,7 @@ export const adminResourceConfig: Record<AdminResource, { label: string; fields:
   },
   lottery: {
     label: "抽選情報",
-    fields: [...commonInfoFields, { name: "productId", label: "商品マスタ", type: "product-reference" }, { name: "deadlineAt", label: "締切日時（日本時間）", type: "datetime" }, { name: "officialUrl", label: "公式URL", type: "url" }, { name: "publicationStatus", label: "公開承認", type: "select", options: ["pending", "approved", "rejected"] }, { name: "applicationStart", label: "応募開始（日本時間）", type: "datetime" }, { name: "resultDate", label: "結果発表（日本時間）", type: "datetime" }, { name: "saleDate", label: "販売日時（日本時間）", type: "datetime" }, { name: "deadline", label: "応募締切（表示用）" }, { name: "source", label: "情報源", type: "hidden" }, { name: "fetchedAt", label: "取得日時", type: "hidden" }, { name: "observedAt", label: "確認日時", type: "hidden" }],
+    fields: [...commonInfoFields, { name: "productId", label: "商品マスタ", type: "product-reference" }, { name: "deadlineAt", label: "締切日時（日本時間）", type: "datetime" }, { name: "officialUrl", label: "公式URL", type: "url" }, { name: "publicationStatus", label: "公開承認", type: "select", options: ["pending", "approved", "rejected"] }, { name: "applicationType", label: "応募方法", type: "select", options: ["online", "store", "both"], optionLabels: { online: "オンライン", store: "店頭", both: "オンライン・店頭" }, placeholder: "未設定" }, { name: "applicationStart", label: "応募開始（日本時間）", type: "datetime" }, { name: "resultDate", label: "結果発表（日本時間）", type: "datetime" }, { name: "saleDate", label: "販売日時（日本時間）", type: "datetime" }, { name: "applicationConditions", label: "応募条件", type: "textarea", placeholder: "会員登録や購入履歴などの応募条件" }, { name: "notes", label: "注意事項", type: "textarea", placeholder: "応募回数、本人確認、キャンセル条件など" }, { name: "deadline", label: "応募締切（表示用）" }, { name: "source", label: "情報源", type: "hidden" }, { name: "fetchedAt", label: "取得日時", type: "hidden" }, { name: "observedAt", label: "確認日時", type: "hidden" }],
   },
   restock: {
     label: "再販情報",

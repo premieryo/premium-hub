@@ -78,6 +78,9 @@ export type LotteryItem = InformationItem & {
   deadlineAt?: string;
   resultDate?: string;
   saleDate?: string;
+  applicationConditions?: string;
+  applicationType?: "online" | "store" | "both";
+  notes?: string;
   observedAt?: string;
 };
 
