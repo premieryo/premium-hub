@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import AffiliateDisclosure from "@/components/AffiliateDisclosure";
 
 export const metadata: Metadata = {
   title: "プライバシーポリシー・免責事項 | プレミア速報",
@@ -52,6 +53,15 @@ const sections = [
           当サイトでは、運営やコンテンツ制作を支えるため、Google AdSense、Amazonアソシエイト、各種ASP、その他のアフィリエイトサービスを利用する場合があります。広告配信事業者が、利用者の興味に合った広告を表示する目的でCookieなどを使用することがあります。
         </p>
         <p>
+          当サイトは、バリューコマースを通じてYahoo!ショッピングのアフィリエイトプログラムを利用しています。「PR」と表示されたリンクを経由して商品を購入された場合、当サイトが紹介料を受け取ることがあります。
+        </p>
+        <p>
+          アフィリエイト報酬の有無によって、利用者の購入価格が通常変更されるものではありません。価格、在庫、送料、返品条件などは変更される場合があるため、リンク先の販売ページに掲載された最新情報が優先されます。
+        </p>
+        <p>
+          成果計測のため、ValueCommerceなどの広告配信事業者がCookieその他の識別技術を使用する場合があります。
+        </p>
+        <p>
           当サイト内のリンクを通じて商品やサービスを購入・申し込みされた場合、当サイトが紹介料を受け取ることがあります。掲載内容はできる限り分かりやすくお伝えしますが、商品の仕様、価格、在庫、契約条件などは、必ず販売元やサービス提供元のページで最新情報をご確認ください。
         </p>
         <p className="rounded-xl border border-orange-400/20 bg-orange-500/5 px-4 py-3 text-orange-100">
@@ -96,6 +106,8 @@ export default function PrivacyPage() {
             トップへ戻る
           </Link>
         </header>
+
+        <AffiliateDisclosure />
 
         <section className="py-10 sm:py-14">
           <p className="text-xs font-black tracking-[0.2em] text-blue-400">POLICY &amp; DISCLAIMER</p>
@@ -146,8 +158,14 @@ export default function PrivacyPage() {
           </Link>
         </div>
 
+        <div className="mt-8 text-center text-xs leading-6 text-slate-400">
+          <p>制定日：2026年8月14日</p>
+          <p>最終改定日：2026年9月1日</p>
+        </div>
+
         <footer className="mt-12 border-t border-blue-400/15 py-8 text-center text-xs text-slate-500">
           <p className="font-bold tracking-[0.18em] text-slate-400">PREMIUM HUB</p>
+          <p className="mt-2 text-slate-400">当サイトはアフィリエイト広告を利用しています。</p>
           <p className="mt-2">プレミア速報｜プライバシーポリシー・免責事項</p>
         </footer>
       </div>

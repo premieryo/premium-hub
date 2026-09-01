@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import AffiliateDisclosure from "@/components/AffiliateDisclosure";
 import type { GenreConfig } from "@/data/genre-config";
 
 type GenrePageFrameProps = {
@@ -24,8 +25,10 @@ export default function GenrePageFrame({
         >
           ← {home ? "トップページへ戻る" : `${config.name}ページへ戻る`}
         </Link>
+        <AffiliateDisclosure />
         {children}
         <footer className="mt-12 border-t border-slate-800 py-6 text-center text-xs text-slate-500">
+          <p className="mb-3 text-slate-400">当サイトはアフィリエイト広告を利用しています。</p>
           <Link href="/privacy" className="underline-offset-4 hover:text-blue-300 hover:underline">
             プライバシーポリシー・免責事項
           </Link>

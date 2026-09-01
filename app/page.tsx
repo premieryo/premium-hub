@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import AffiliateDisclosure from "@/components/AffiliateDisclosure";
 import { genreConfigs } from "@/data/genre-config";
 import { genres, type LotteryItem } from "@/data/types";
 import { getGenreContext } from "@/lib/genres";
@@ -103,6 +104,8 @@ export default async function HomePage() {
             HOBBY MARKET GUIDE
           </span>
         </header>
+
+        <AffiliateDisclosure />
 
         <section className="py-10 sm:py-14 lg:grid lg:grid-cols-[1.35fr_0.65fr] lg:items-end lg:gap-12 lg:py-20">
           <div>
@@ -250,6 +253,7 @@ export default async function HomePage() {
         <footer className="mt-14 border-t border-blue-400/15 py-8 text-center text-xs text-slate-500">
           <p className="font-bold tracking-[0.18em] text-slate-400">PREMIUM HUB</p>
           <p className="mt-2">プレミア速報｜手に入れた後の行動まで、初心者にも分かりやすく</p>
+          <p className="mt-2 text-slate-400">当サイトはアフィリエイト広告を利用しています。</p>
           <Link href="/privacy" className="mt-3 inline-block underline-offset-4 hover:text-blue-300 hover:underline">
             プライバシーポリシー・免責事項
           </Link>
