@@ -3,6 +3,7 @@ import type { GenreConfig } from "@/data/genre-config";
 import type { GenreData } from "@/data/genre-data";
 import EmptyState from "./EmptyState";
 import GenrePageFrame from "./GenrePageFrame";
+import LotteryCard from "./LotteryCard";
 
 type ListKind = "lottery" | "restock" | "ranking";
 
@@ -21,9 +22,12 @@ export default function GenreListPage({ config, data, kind }: { config: GenreCon
         <p className="mt-3 text-slate-300">{presentation.description}</p>
       </header>
       <section className="mt-8 space-y-4">
-        {items.length === 0 ? <EmptyState /> : items.map((item) => {
-          const price = kind === "lottery" ? `応募締切：${"deadline" in item ? item.deadline : ""}`
-            : kind === "restock" ? `販売開始：${"date" in item ? item.date : ""}`
+        {items.length === 0 ? (
+          <EmptyState message={kind === "lottery" ? `現在受付中の${config.name}抽選情報はありません。` : undefined} />
+        ) : kind === "lottery" ? (
+          data.lottery.map((item) => <LotteryCard key={item.id} item={item} />)
+        ) : items.map((item) => {
+          const price = kind === "restock" ? `販売開始：${"date" in item ? item.date : ""}`
             : "currentPrice" in item && typeof item.currentPrice === "number"
               ? `現在 ${item.currentPrice.toLocaleString()}円 / 前回 ${(item.previousPrice ?? item.currentPrice).toLocaleString()}円`
               : "price" in item ? item.price : "";
