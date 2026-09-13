@@ -6,6 +6,9 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
+const SOURCE_INTERVAL_MS = 300;
+const wait = (milliseconds: number) => new Promise((resolve) => setTimeout(resolve, milliseconds));
+
 export async function GET(request: Request) {
   const startedAt = new Date().toISOString();
   const secret = process.env.CRON_SECRET;
@@ -17,21 +20,31 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const results = await Promise.all(lotterySources.map(async (source) => {
+  const results: Array<{
+    sourceId: string;
+    sourceName: string;
+    policy: "auto" | "review";
+    ok: boolean;
+    candidates: Awaited<ReturnType<typeof fetchLotteryCandidates>>;
+    error?: string;
+  }> = [];
+
+  for (const [index, source] of lotterySources.entries()) {
     try {
       const candidates = await fetchLotteryCandidates(source);
-      return { sourceId: source.id, sourceName: source.name, policy: source.policy, ok: true as const, candidates };
+      results.push({ sourceId: source.id, sourceName: source.name, policy: source.policy, ok: true, candidates });
     } catch (error) {
-      return {
+      results.push({
         sourceId: source.id,
         sourceName: source.name,
         policy: source.policy,
-        ok: false as const,
+        ok: false,
         error: error instanceof Error ? error.message : String(error),
         candidates: [],
-      };
+      });
     }
-  }));
+    if (index < lotterySources.length - 1) await wait(SOURCE_INTERVAL_MS);
+  }
 
   const candidateCount = results.reduce((sum, result) => sum + result.candidates.length, 0);
   const failedSourceCount = results.filter((result) => !result.ok).length;
