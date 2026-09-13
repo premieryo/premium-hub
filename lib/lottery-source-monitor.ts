@@ -36,8 +36,10 @@ function stripTags(value: string) {
 
 function normalizeUrl(href: string, baseUrl: string) {
   try {
-    const url = new URL(decodeEntities(href), baseUrl);
+    const base = new URL(baseUrl);
+    const url = new URL(decodeEntities(href), base);
     if (url.protocol !== "https:" && url.protocol !== "http:") return null;
+    if (url.hostname !== base.hostname) return null;
     url.hash = "";
     return url.toString();
   } catch {
