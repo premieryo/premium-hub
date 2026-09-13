@@ -14,6 +14,7 @@ import type { AdminResource } from "./admin-data";
 import { selectPublicRankingProducts } from "./price-tracking";
 import { isPublicInformationItem } from "./information-moderation";
 import { fallbackCardRanking, mergeOfficialCardCatalog } from "@/data/card-catalog";
+import { hasLotteryEnded, parseLotteryDateTime } from "./lottery-status";
 
 export function isGenre(value: string): value is Genre {
   return genres.includes(value as Genre);
@@ -66,8 +67,8 @@ function filterPublicLottery(items: LotteryItem[], now: Date) {
   return items.filter((item) => {
     if (!isPublicInformationItem(item)) return false;
     if (item.deadlineAt) {
-      const deadline = new Date(item.deadlineAt);
-      return Number.isNaN(deadline.getTime()) || deadline.getTime() >= now.getTime();
+      const deadline = parseLotteryDateTime(item.deadlineAt);
+      return deadline === null || !hasLotteryEnded(item, now);
     }
     const deadline = parseJapaneseDate(item.deadline, now);
     return deadline === null || deadline.getTime() >= now.getTime();

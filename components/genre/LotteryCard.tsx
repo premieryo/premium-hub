@@ -1,4 +1,5 @@
 import type { LotteryItem } from "@/data/types";
+import { getLotteryStatus, parseLotteryDateTime } from "@/lib/lottery-status";
 
 const tokyoDateTimeFormatter = new Intl.DateTimeFormat("ja-JP", {
   timeZone: "Asia/Tokyo",
@@ -10,8 +11,8 @@ const tokyoDateTimeFormatter = new Intl.DateTimeFormat("ja-JP", {
 });
 
 export function formatLotteryDateTime(value: string) {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
+  const date = parseLotteryDateTime(value);
+  if (!date) return value;
   const parts = Object.fromEntries(
     tokyoDateTimeFormatter.formatToParts(date).map(({ type, value: partValue }) => [type, partValue])
   );
@@ -37,7 +38,7 @@ function DateDetail({ label, value }: { label: string; value: string }) {
   );
 }
 
-export default function LotteryCard({ item }: { item: LotteryItem }) {
+export default function LotteryCard({ item, now }: { item: LotteryItem; now?: Date }) {
   const deadline = item.deadlineAt
     ? `${formatLotteryDateTime(item.deadlineAt)}まで`
     : item.deadline;
@@ -50,7 +51,7 @@ export default function LotteryCard({ item }: { item: LotteryItem }) {
       <p className="mt-1 break-words text-sm text-slate-300">{item.shop}</p>
 
       <span className="mt-3 inline-flex max-w-full break-words rounded-full bg-blue-400/15 px-3 py-1 text-center text-xs font-bold text-blue-200">
-        {item.status}
+        {getLotteryStatus(item, now)}
       </span>
 
       {item.applicationType ? (

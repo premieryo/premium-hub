@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import GenreListPage from "@/components/genre/GenreListPage";
 import { generateGenreParams, getGenreContext } from "@/lib/genres";
 import { generateGenreMetadata } from "@/lib/genre-metadata";
+import { connection } from "next/server";
 
 export const generateStaticParams = generateGenreParams;
 
@@ -10,6 +11,7 @@ export function generateMetadata({ params }: { params: Promise<{ genre: string }
 }
 
 export default async function Page({ params }: { params: Promise<{ genre: string }> }) {
+  await connection();
   const { genre } = await params;
   const context = await getGenreContext(genre);
   if (!context) notFound();

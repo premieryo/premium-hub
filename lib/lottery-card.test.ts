@@ -29,7 +29,10 @@ test("抽選日時を日本時間で表示する", () => {
 });
 
 test("抽選カードは既存項目と公式応募CTAを表示する", () => {
-  const html = renderToStaticMarkup(createElement(LotteryCard, { item }));
+  const html = renderToStaticMarkup(createElement(LotteryCard, {
+    item,
+    now: new Date("2026-09-02T00:00:00.000Z"),
+  }));
 
   assert.match(html, /テスト商品/);
   assert.match(html, /テストショップ/);
