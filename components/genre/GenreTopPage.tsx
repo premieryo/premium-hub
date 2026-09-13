@@ -17,7 +17,8 @@ export default function GenreTopPage({ config, data }: { config: GenreConfig; da
         <p className="mt-3 text-sm text-slate-300 md:text-base">{config.description}</p>
       </header>
 
-      <nav className="mt-6 grid grid-cols-2 gap-3" aria-label={`${config.name}の商品・相場メニュー`}>
+      <nav className="mt-6 grid grid-cols-2 gap-3" aria-label={`${config.name}の商品・抽選・相場メニュー`}>
+        <SectionLink href={`/${config.slug}/lottery`} title="抽選情報" text="現在受付中の抽選を確認" />
         <SectionLink href={`/${config.slug}/products`} title="歴代BOX" text="通常BOXを探す" />
         <SectionLink href={`/${config.slug}/ranking`} title="BOX相場" text="店頭の定価と比べる" />
         {isCardGenre && <SectionLink href={`/${config.slug}/collections`} title="コレクションBOX" text="限定・セット商品を探す" />}
