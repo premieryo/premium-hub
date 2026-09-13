@@ -2,12 +2,17 @@ import Link from "next/link";
 import ProductCard from "@/components/ProductCard";
 import type { GenreConfig } from "@/data/genre-config";
 import type { GenreData } from "@/data/genre-data";
+import { getLotteryStatus } from "@/lib/lottery-status";
 import EmptyState from "./EmptyState";
 import GenrePageFrame from "./GenrePageFrame";
+import { formatLotteryDateTime } from "./LotteryCard";
 import ProductGrid from "./ProductGrid";
 
 export default function GenreTopPage({ config, data }: { config: GenreConfig; data: GenreData }) {
-  const acceptingCount = data.lottery.filter((item) => item.status === "受付中").length;
+  const acceptingCount = data.lottery.filter((item) => {
+    const status = getLotteryStatus(item);
+    return status === "受付中" || status === "締切間近";
+  }).length;
   const isCardGenre = ["pokemon", "onepiece", "dragonball"].includes(config.slug);
 
   return (
@@ -56,10 +61,22 @@ export default function GenreTopPage({ config, data }: { config: GenreConfig; da
           <span className="rounded-full bg-red-500/20 px-3 py-1 text-sm text-red-300">{data.lottery.length}件</span>
         </div>
         <div className="mt-5 space-y-4">
-          {data.lottery.length === 0 ? <EmptyState /> : data.lottery.map((item) => (
-            <ProductCard key={item.id} emoji={item.icon} category={item.shop} title={item.product}
-              price={`応募締切：${item.deadline}`} description={item.status} href={item.href} />
-          ))}
+          {data.lottery.length === 0 ? <EmptyState /> : data.lottery.map((item) => {
+            const deadline = item.deadlineAt
+              ? `${formatLotteryDateTime(item.deadlineAt)}まで`
+              : item.deadline;
+            return (
+              <ProductCard
+                key={item.id}
+                emoji={item.icon}
+                category={item.shop}
+                title={item.product}
+                price={`応募締切：${deadline}`}
+                description={getLotteryStatus(item)}
+                href={item.href}
+              />
+            );
+          })}
         </div>
       </section>
 
