@@ -4,6 +4,7 @@ import type { GenreData } from "@/data/genre-data";
 import EmptyState from "./EmptyState";
 import GenrePageFrame from "./GenrePageFrame";
 import LotteryCard from "./LotteryCard";
+import RestockCard from "./RestockCard";
 
 type ListKind = "lottery" | "restock" | "ranking";
 
@@ -23,14 +24,23 @@ export default function GenreListPage({ config, data, kind }: { config: GenreCon
       </header>
       <section className="mt-8 space-y-4">
         {items.length === 0 ? (
-          <EmptyState message={kind === "lottery" ? `現在受付中の${config.name}抽選情報はありません。` : undefined} />
+          <EmptyState
+            message={
+              kind === "lottery"
+                ? `現在受付中の${config.name}抽選情報はありません。`
+                : kind === "restock"
+                  ? `現在掲載中の${config.name}再販情報はありません。`
+                  : undefined
+            }
+          />
         ) : kind === "lottery" ? (
           data.lottery.map((item) => <LotteryCard key={item.id} item={item} />)
+        ) : kind === "restock" ? (
+          data.restock.map((item) => <RestockCard key={item.id} item={item} />)
         ) : items.map((item) => {
-          const price = kind === "restock" ? `販売開始：${"date" in item ? item.date : ""}`
-            : "currentPrice" in item && typeof item.currentPrice === "number"
-              ? `現在 ${item.currentPrice.toLocaleString()}円 / 前回 ${(item.previousPrice ?? item.currentPrice).toLocaleString()}円`
-              : "price" in item ? item.price : "";
+          const price = "currentPrice" in item && typeof item.currentPrice === "number"
+            ? `現在 ${item.currentPrice.toLocaleString()}円 / 前回 ${(item.previousPrice ?? item.currentPrice).toLocaleString()}円`
+            : "price" in item ? item.price : "";
           return <ProductCard key={item.id} emoji={item.icon} category={item.shop} title={item.product}
             price={price} description={item.status} href={item.href} />;
         })}
