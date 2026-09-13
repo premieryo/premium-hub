@@ -46,6 +46,13 @@ test("rejects lotteries that have not started or already ended", () => {
   assert.ok(after.reasons.includes("application-ended"));
 });
 
+test("rejects date-only or timezone-less timestamps", () => {
+  const dateOnly = evaluateLotteryAutoPublish({ ...base, applicationStart: "2026-09-11" }, now);
+  const noTimezone = evaluateLotteryAutoPublish({ ...base, deadlineAt: "2026-09-16T16:59:00" }, now);
+  assert.ok(dateOnly.reasons.includes("invalid-application-start"));
+  assert.ok(noTimezone.reasons.includes("invalid-deadline"));
+});
+
 test("rejects invalid date windows and unverified parsers", () => {
   const decision = evaluateLotteryAutoPublish({
     ...base,
