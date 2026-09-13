@@ -36,3 +36,13 @@ test("deduplicates duplicate links", () => {
   `;
   assert.equal(extractLotteryCandidates(source, html).length, 1);
 });
+
+test("rejects relevant-looking links that leave the official source host", () => {
+  const html = `
+    <a href="https://evil.example/news/lottery">ポケモンカード 抽選販売のお知らせ</a>
+    <a href="https://example.com/news/lottery-2">ポケモンカード 抽選販売のお知らせ</a>
+  `;
+  const candidates = extractLotteryCandidates(source, html);
+  assert.equal(candidates.length, 1);
+  assert.equal(candidates[0]?.url, "https://example.com/news/lottery-2");
+});
