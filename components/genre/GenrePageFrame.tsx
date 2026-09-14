@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import AffiliateDisclosure from "@/components/AffiliateDisclosure";
+import TopNavigation from "@/components/TopNavigation";
 import type { GenreConfig } from "@/data/genre-config";
 
 type GenrePageFrameProps = {
@@ -27,13 +28,10 @@ export default function GenrePageFrame({
   return (
     <main className="min-h-screen bg-slate-950 px-4 py-8 text-white">
       <div className={maxWidth === "3xl" ? "mx-auto max-w-3xl" : "mx-auto max-w-5xl"}>
-        <Link
-          href={home ? "/" : `/${config.slug}`}
-          className="text-sm font-bold text-blue-400 hover:text-blue-300"
-        >
-          ← {home ? "トップページへ戻る" : `${config.name}ページへ戻る`}
-        </Link>
-        <AffiliateDisclosure />
+        <TopNavigation fallbackHref={home ? "/" : `/${config.slug}`} />
+        <div className="mt-5">
+          <AffiliateDisclosure />
+        </div>
         {children}
 
         {!home && (
