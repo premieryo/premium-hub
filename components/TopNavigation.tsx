@@ -1,0 +1,4 @@
+"use client";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+export default function TopNavigation({fallbackHref="/"}:{fallbackHref?:string}){const router=useRouter();function goBack(){if(document.referrer){try{const ref=new URL(document.referrer);if(ref.origin===window.location.origin){router.back();return}}catch{}}router.push(fallbackHref)}return <nav aria-label="ページナビゲーション" className="grid grid-cols-2 gap-3"><button type="button" onClick={goBack} className="min-h-12 rounded-xl border border-blue-400/30 bg-blue-950/40 px-3 py-3 text-sm font-bold text-blue-200 transition hover:bg-blue-900/50">← 前のページに戻る</button><Link href="/" className="flex min-h-12 items-center justify-center rounded-xl border border-blue-400/30 bg-blue-950/40 px-3 py-3 text-center text-sm font-bold text-blue-200 transition hover:bg-blue-900/50">⌂ トップページに戻る</Link></nav>}
