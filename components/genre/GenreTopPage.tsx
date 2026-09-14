@@ -73,7 +73,7 @@ export default function GenreTopPage({ config, data }: { config: GenreConfig; da
                 title={item.product}
                 price={`応募締切：${deadline}`}
                 description={getLotteryStatus(item)}
-                href={item.href}
+                href={`/${config.slug}/lottery`}
               />
             );
           })}
