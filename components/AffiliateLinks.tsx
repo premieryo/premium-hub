@@ -1,12 +1,13 @@
-import { activeAffiliateLinks } from "@/lib/affiliate-links";
+import { activeAffiliateLinks, type AffiliateCategory, type AffiliateUseCase } from "@/lib/affiliate-links";
 
 type Props = {
-  category: "storage" | "packing" | "grading" | "selling";
+  category: AffiliateCategory;
+  useCase?: AffiliateUseCase;
   title?: string;
 };
 
-export default function AffiliateLinks({ category, title = "関連商品・サービス" }: Props) {
-  const links = activeAffiliateLinks(category);
+export default function AffiliateLinks({ category, useCase, title = "関連商品・サービス" }: Props) {
+  const links = activeAffiliateLinks(category, useCase);
   if (links.length === 0) return null;
 
   return (
@@ -16,7 +17,7 @@ export default function AffiliateLinks({ category, title = "関連商品・サ�
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
         {links.map((link) => (
           <a
-            key={`${link.provider}-${link.label}-${link.href}`}
+            key={link.id}
             href={link.href}
             target="_blank"
             rel="sponsored nofollow noopener noreferrer"
