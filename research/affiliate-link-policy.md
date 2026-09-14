@@ -21,14 +21,25 @@ ValueCommerce supports Yahoo! Shopping examples through MyLink. MyLink requires 
 PREMIUM HUB plan: use approved text/deep links first. Do not copy/re-host Yahoo product images unless the exact program terms explicitly permit the chosen method.
 
 ## Amazon Associates Japan
+- PREMIUM HUB tracking ID confirmed in the Associates account: `premiumsokuho-22`.
 - Active Associates account and compliance with the operating agreement are required.
-- Amazon states PA-API access is not available merely on application: activity/sales and account review/approval are required before API access keys can be obtained.
-- Do not download/re-host or screenshot Amazon product images. Amazon says to use Amazon-provided image URLs/tools.
-- Under current program-content rules, image content itself must not be cached; image links may be cached only for the permitted limited period (currently up to 24h under the published policy).
+- Creators API remains a later phase until Amazon's current eligibility requirements are satisfied.
+- Do not download/re-host or screenshot Amazon product images. Use Amazon-provided image URLs/tools when image integration becomes eligible.
 - Amazon program content must link to the relevant Amazon page, not be repurposed to promote another retailer.
-- Current Amazon policy also restricts sites with price-tracking/price-alert functionality unless separately agreed. Therefore Amazon product-content/API integration must remain isolated from PREMIUM HUB's non-Amazon market-price tracking features and must be re-reviewed before launch.
+- Amazon product-content/API integration must remain isolated from PREMIUM HUB's non-Amazon market-price tracking features and be re-reviewed before launch.
 
-PREMIUM HUB plan: Phase 1 uses approved text/product affiliate links only. Phase 2 image cards only after the exact current Amazon-provided image/API mechanism is implemented and reviewed.
+PREMIUM HUB plan: Phase 1 uses Associates-generated text/product links tied to `premiumsokuho-22`. Phase 2 image cards only after the exact current Amazon-provided image/API mechanism is implemented and reviewed.
+
+Initial Phase 1 product slots:
+- card sleeves
+- top loaders / hard cases
+- unopened BOX protection cases
+- humidity-control supplies
+- OPP bags
+- bubble wrap / cushioning
+- shipping boxes
+
+Each slot has a Yahoo and Amazon record in `lib/affiliate-links.ts`. Records stay disabled until the exact tracked destination is generated and checked. This allows one approved link to be enabled without exposing unfinished placeholders.
 
 ## Rakuten Affiliate — HOLD pending eligibility confirmation
 Important: the current Rakuten Affiliate guideline lists sites containing content that promotes resale/tenbai among prohibited affiliate-link placements. PREMIUM HUB contains market/selling guidance, so Rakuten eligibility is not assumed. Do not enable Rakuten links until Rakuten confirms the site's actual content/use case is acceptable or the site is otherwise clearly eligible under current rules.
@@ -40,7 +51,7 @@ If eligibility is confirmed:
 - make the Rakuten destination clear;
 - do not copy ordinary Rakuten shop-page images;
 - use only images/link materials allowed through Rakuten Affiliate and follow its current resizing/cropping/overlay restrictions;
-- current published Rakuten Market attribution is cart within 24h and purchase within 89 days, with category-based rates shown as 2–4%; re-check at launch.
+- re-check attribution/rate conditions at launch.
 
 ## Grading and buyback services
 - Compare PSA and other services editorially even if no affiliate agreement exists.
@@ -51,7 +62,7 @@ If eligibility is confirmed:
 
 ## Rollout status
 - Yahoo: READY FOR ACCOUNT/LINK VERIFICATION; text/deep-link first.
-- Amazon: READY FOR ACCOUNT/LINK VERIFICATION; text links first, API/images later.
+- Amazon: tracking ID confirmed; READY FOR ASSOCIATES LINK CREATION; text links first, API/images later.
 - Rakuten: BLOCKED until site eligibility is confirmed because of the resale-content restriction.
 - Grading/buyback: READY FOR advertiser discovery and approval checks.
 
