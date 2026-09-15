@@ -23,7 +23,7 @@ export const AMAZON_ASSOCIATE_TRACKING_ID = "premiumsokuho-22";
 // Rakuten: HOLD. Current Rakuten rules may conflict with resale/tenbai-oriented content. Do not enable until PREMIUM HUB eligibility is confirmed.
 export const affiliateLinks: AffiliateLink[] = [
   { id: "storage-yahoo-sleeves", category: "storage", useCase: "card-sleeves", provider: "yahoo", label: "Yahoo!でカードスリーブを見る", href: "", enabled: false, destinationName: "Yahoo!ショッピング" },
-  { id: "storage-amazon-sleeves", category: "storage", useCase: "card-sleeves", provider: "amazon", label: "Amazonでカードスリーブを見る", href: "", enabled: false, destinationName: "Amazon.co.jp" },
+  { id: "storage-amazon-sleeves", category: "storage", useCase: "card-sleeves", provider: "amazon", label: "Amazonでカードスリーブを見る", href: "https://link.amazon/B0fD4FPLQ", enabled: true, destinationName: "Amazon.co.jp", disclosure: "Amazonアソシエイトリンク", reviewedAt: "2026-09-15" },
   { id: "storage-yahoo-loaders", category: "storage", useCase: "top-loaders", provider: "yahoo", label: "Yahoo!でローダーを見る", href: "", enabled: false, destinationName: "Yahoo!ショッピング" },
   { id: "storage-amazon-loaders", category: "storage", useCase: "top-loaders", provider: "amazon", label: "Amazonでローダーを見る", href: "", enabled: false, destinationName: "Amazon.co.jp" },
   { id: "storage-yahoo-box-cases", category: "storage", useCase: "box-cases", provider: "yahoo", label: "Yahoo!でBOX保護ケースを見る", href: "", enabled: false, destinationName: "Yahoo!ショッピング" },
