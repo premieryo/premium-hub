@@ -1,6 +1,6 @@
 export type AffiliateProvider = "yahoo" | "amazon" | "rakuten" | "service";
 export type AffiliateCategory = "storage" | "packing" | "grading" | "selling";
-export type AffiliateUseCase = "card-sleeves" | "top-loaders" | "magnetic-loaders" | "full-protect-cases" | "box-cases" | "humidity-control" | "opp-bags" | "bubble-wrap" | "shipping-boxes" | "grading-service" | "buyback-service";
+export type AffiliateUseCase = "card-sleeves" | "top-loaders" | "magnetic-loaders" | "full-protect-cases" | "slab-sleeves" | "box-cases" | "humidity-control" | "opp-bags" | "bubble-wrap" | "shipping-boxes" | "grading-service" | "buyback-service";
 
 export type AffiliateLink = {
   id: string;
@@ -28,6 +28,7 @@ export const affiliateLinks: AffiliateLink[] = [
   { id: "storage-amazon-loaders", category: "storage", useCase: "top-loaders", provider: "amazon", label: "Amazonでローダーを見る", href: "https://link.amazon/B0hRnbeph", enabled: true, destinationName: "Amazon.co.jp", disclosure: "Amazonアソシエイトリンク", reviewedAt: "2026-09-20" },
   { id: "storage-amazon-magnetic-loaders", category: "storage", useCase: "magnetic-loaders", provider: "amazon", label: "Amazonでマグネットローダーを見る", href: "https://link.amazon/B0eDRxRw9", enabled: true, destinationName: "Amazon.co.jp", disclosure: "Amazonアソシエイトリンク", reviewedAt: "2026-09-21" },
   { id: "storage-amazon-full-protect", category: "storage", useCase: "full-protect-cases", provider: "amazon", label: "Amazonでフルプロテクトを見る", href: "https://link.amazon/B06OGUxUM", enabled: true, destinationName: "Amazon.co.jp", disclosure: "Amazonアソシエイトリンク", reviewedAt: "2026-09-21" },
+  { id: "storage-amazon-slab-sleeves", category: "storage", useCase: "slab-sleeves", provider: "amazon", label: "Amazonで鑑定済みカード用保護袋を見る", href: "https://link.amazon/B03pASNZm", enabled: true, destinationName: "Amazon.co.jp", disclosure: "Amazonアソシエイトリンク", reviewedAt: "2026-09-21" },
   { id: "storage-yahoo-box-cases", category: "storage", useCase: "box-cases", provider: "yahoo", label: "Yahoo!でBOX保護ケースを見る", href: "", enabled: false, destinationName: "Yahoo!ショッピング" },
   { id: "storage-amazon-box-cases", category: "storage", useCase: "box-cases", provider: "amazon", label: "AmazonでBOX保護ケースを見る", href: "", enabled: false, destinationName: "Amazon.co.jp" },
   { id: "storage-yahoo-humidity", category: "storage", useCase: "humidity-control", provider: "yahoo", label: "Yahoo!で防湿用品を見る", href: "", enabled: false, destinationName: "Yahoo!ショッピング" },
