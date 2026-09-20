@@ -94,6 +94,7 @@ export default function Page() {
               </section>
               {index === 0 ? <CardProtectionGuide /> : null}
               {index === 1 ? <AffiliateLinks category="storage" useCase="box-cases" title="おすすめのBOX保護ケース" /> : null}
+              {index === 2 ? <AffiliateLinks category="storage" useCase="figure-cases" title="おすすめのフィギュアケース" /> : null}
             </div>
           ))}
         </div>
