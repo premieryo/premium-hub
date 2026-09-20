@@ -59,6 +59,7 @@ function CardProtectionGuide() {
         <div className="rounded-xl bg-slate-950/60 p-4">
           <h3 className="font-black">鑑定済み｜スラブ用保護</h3>
           <p className="mt-2 text-sm leading-6 text-slate-300">PSA・BGS・CGCなどの鑑定ケースは、スラブ用保護袋や専用ケースでケース自体の擦れ・傷を防ぎます。</p>
+          <AffiliateLinks category="storage" useCase="slab-sleeves" title="おすすめの鑑定済みカード用保護袋" />
         </div>
       </div>
 
