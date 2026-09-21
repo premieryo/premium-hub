@@ -49,13 +49,17 @@ function CardProtectionGuide() {
 
         <div className="rounded-xl bg-slate-950/60 p-4">
           <h3 className="font-black">最上位｜スリーブ＋強固な保護ケース</h3>
-          <p className="mt-2 text-sm leading-6 text-slate-300">高額カードやコレクションの主力は、マグネットホルダーやフルプロテクト系ケースなど、より強固な保護を検討。</p>
-          <p className="mt-2 text-xs leading-5 text-slate-400">おすすめ商品は、実際の対応サイズを確認してから追加予定です。</p>
+          <p className="mt-2 text-sm leading-6 text-slate-300">高額カードやコレクションの主力は、マグネットローダーやフルプロテクト系ケースなど、より強固な保護を検討。</p>
+          <div className="mt-3 space-y-3">
+            <AffiliateLinks category="storage" useCase="magnetic-loaders" title="おすすめのマグネットローダー" />
+            <AffiliateLinks category="storage" useCase="full-protect-cases" title="おすすめのフルプロテクト" />
+          </div>
         </div>
 
         <div className="rounded-xl bg-slate-950/60 p-4">
           <h3 className="font-black">鑑定済み｜スラブ用保護</h3>
           <p className="mt-2 text-sm leading-6 text-slate-300">PSA・BGS・CGCなどの鑑定ケースは、スラブ用保護袋や専用ケースでケース自体の擦れ・傷を防ぎます。</p>
+          <AffiliateLinks category="storage" useCase="slab-sleeves" title="おすすめの鑑定済みカード用保護袋" />
         </div>
       </div>
 
@@ -89,6 +93,8 @@ export default function Page() {
                 </div>
               </section>
               {index === 0 ? <CardProtectionGuide /> : null}
+              {index === 1 ? <AffiliateLinks category="storage" useCase="box-cases" title="おすすめのBOX保護ケース" /> : null}
+              {index === 2 ? <AffiliateLinks category="storage" useCase="figure-cases" title="おすすめのフィギュアケース" /> : null}
             </div>
           ))}
         </div>
