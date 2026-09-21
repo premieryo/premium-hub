@@ -63,6 +63,11 @@ export default function GenreGuidePage({ config }: { config: GenreConfig }) {
             <div className="mt-3 space-y-3 text-sm leading-7 text-slate-300 md:text-base">
               {item.paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
             </div>
+            {(isCardGenre && item.title === "BOXをきれいに保管する") || (!isCardGenre && item.title === "商品の保管方法") ? (
+              <Link href="/guide/storage" className="mt-4 inline-flex min-h-11 items-center rounded-xl border border-blue-400/40 bg-blue-500/10 px-4 py-2 text-sm font-bold text-blue-300 transition hover:bg-blue-500/20">
+                保管方法・おすすめ用品の詳細を見る →
+              </Link>
+            ) : null}
           </article>
         ))}
       </section>
