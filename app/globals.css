@@ -24,3 +24,27 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+
+/* Give interactive elements immediate feedback on touch/click without changing layout. */
+@media (hover: none), (pointer: coarse) {
+  :where(a[href], button:not(:disabled), [role="button"]) {
+    -webkit-tap-highlight-color: transparent;
+    transition-property: filter, box-shadow, opacity, transform;
+    transition-duration: 120ms;
+    transition-timing-function: ease-out;
+  }
+
+  :where(a[href], button:not(:disabled), [role="button"]):active {
+    filter: brightness(1.22);
+    box-shadow: 0 0 0 1px rgb(255 255 255 / 0.22), 0 0 14px rgb(255 255 255 / 0.16);
+    opacity: 0.96;
+    transform: scale(0.99);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :where(a[href], button:not(:disabled), [role="button"]) {
+    transition-duration: 0.01ms;
+  }
+}
