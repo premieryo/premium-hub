@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import AffiliateDisclosure from "@/components/AffiliateDisclosure";
 import AffiliateLinks from "@/components/AffiliateLinks";
+import Link from "next/link";
 import TopNavigation from "@/components/TopNavigation";
 
 export const metadata: Metadata = {
@@ -95,6 +96,11 @@ export default function Page() {
           <p className="mt-4 text-sm leading-6 text-slate-400">
             代表例としてPSA、BGS（Beckett）、CGCなどがあります。各社で評価基準・料金体系・納期が異なり、条件は変更されることがあります。
           </p>
+          <div className="mt-4 grid gap-3 sm:grid-cols-3">
+            <ExternalLink href="https://www.psacard.co.jp/" label="PSA Japan公式を見る" />
+            <ExternalLink href="https://www.beckett.com/grading" label="Beckett公式を見る" />
+            <ExternalLink href="https://www.cgccards.com/" label="CGC Cards公式を見る" />
+          </div>
         </section>
 
         <section className="mt-4 rounded-2xl border border-blue-400/20 bg-[#09152c] p-5">
@@ -114,5 +120,18 @@ export default function Page() {
         </section>
       </div>
     </main>
+  );
+}
+
+function ExternalLink({ href, label }: { href: string; label: string }) {
+  return (
+    <Link
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="flex min-h-11 items-center justify-center rounded-xl border border-blue-400/30 bg-blue-500/10 px-4 py-3 text-center text-sm font-bold text-blue-200 transition hover:bg-blue-500/20"
+    >
+      {label} →
+    </Link>
   );
 }
