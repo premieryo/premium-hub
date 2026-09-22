@@ -64,7 +64,8 @@ export default function Page() {
                 <div className="mt-4 space-y-2 text-sm">
                   <a className="block rounded-xl border border-slate-600/50 p-3 font-bold text-blue-200" href="https://jp.mercari.com/search?afid=1698778303&amp;keyword=%E3%83%88%E3%83%AC%E3%83%BC%E3%83%87%E3%82%A3%E3%83%B3%E3%82%B0%E3%82%AC%E3%83%BC%E3%83%89" target="_blank" rel="noopener noreferrer nofollow">メルカリでトレーディングカードを見る（販売手数料 10%） <span className="block text-[11px] font-normal text-slate-400">広告・アフィリエイトリンク</span></a>
                   <a className="block rounded-xl border border-slate-600/50 p-3 font-bold text-blue-200" href="https://fril.jp/" target="_blank" rel="noopener noreferrer">楽天ラクマ（販売手数料 4.5〜10%）↗</a>
-                  <p className="text-[11px] leading-5 text-slate-400">※代表例。広告リンクではありません。ラクマは販売実績に応じて手数料率が変動します。</p>
+                  <a className="block rounded-xl border border-slate-600/50 p-3 font-bold text-blue-200" href="https://snkrdunk.com/" target="_blank" rel="noopener noreferrer">スニーカーダンク（販売手数料は最新条件を確認）↗</a>
+                  <p className="text-[11px] leading-5 text-slate-400">※楽天ラクマ・スニーカーダンクは代表例として掲載する通常リンクです。ラクマは販売実績に応じて手数料率が変動します。</p>
                 </div>
               )}
               {m.kind === "auction" && (
