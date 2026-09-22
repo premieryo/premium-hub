@@ -56,21 +56,27 @@ export default function Page() {
               <p className="mt-2 text-sm leading-6 text-slate-300"><b className="text-white">注意：</b>{m.watch}</p>
               <p className="mt-3 rounded-xl bg-slate-950/60 p-3 text-sm font-bold text-blue-200">向いている人：{m.fit}</p>
               {m.kind === "buyback" && (
-                <a className="mt-4 block rounded-xl border border-blue-400/30 bg-blue-500/10 p-3 text-center text-sm font-black text-blue-200" href="https://affiliate.suruga-ya.jp/modules/af/af_jump.php?user_id=5447&amp;goods_url=https%3A%2F%2Fwww.suruga-ya.jp%2Fman%2Fkaitori%2Fkaitoritop.html" rel="nofollow">
+                <div className="mt-4 rounded-xl border border-orange-400/30 bg-orange-500/5 p-3">
+                  <p className="font-black text-orange-200">駿河屋</p>
+                  <p className="mt-1 text-xs leading-5 text-slate-400">カード・ホビーなどの買取サービス。査定方法や最新条件は申込前に確認してください。</p>
+                </div>
+              )}
+              {m.kind === "buyback" && (
+                <a className="mt-4 block rounded-xl border border-slate-500/70 bg-[#050b18] p-3 text-center text-sm font-black text-white" href="https://affiliate.suruga-ya.jp/modules/af/af_jump.php?user_id=5447&amp;goods_url=https%3A%2F%2Fwww.suruga-ya.jp%2Fman%2Fkaitori%2Fkaitoritop.html" rel="nofollow">
                   駿河屋の買取を確認する <span className="block text-[11px] font-normal text-slate-400">広告・アフィリエイトリンク</span>
                 </a>
               )}
               {m.kind === "flea" && (
                 <div className="mt-4 space-y-2 text-sm">
-                  <a className="block rounded-xl border border-slate-600/50 p-3 font-bold text-blue-200" href="https://jp.mercari.com/search?afid=1698778303&amp;keyword=%E3%83%88%E3%83%AC%E3%83%BC%E3%83%87%E3%82%A3%E3%83%B3%E3%82%B0%E3%82%AC%E3%83%BC%E3%83%89" target="_blank" rel="noopener noreferrer nofollow">メルカリでトレーディングカードを見る（販売手数料 10%） <span className="block text-[11px] font-normal text-slate-400">広告・アフィリエイトリンク</span></a>
-                  <a className="block rounded-xl border border-slate-600/50 p-3 font-bold text-blue-200" href="https://fril.jp/" target="_blank" rel="noopener noreferrer">楽天ラクマ（販売手数料 4.5〜10%）↗</a>
-                  <a className="block rounded-xl border border-slate-600/50 p-3 font-bold text-blue-200" href="https://snkrdunk.com/" target="_blank" rel="noopener noreferrer">スニーカーダンク（販売手数料は最新条件を確認）↗</a>
+                  <a className="block rounded-xl border border-slate-500/70 bg-[#050b18] p-3 text-center font-black text-white" href="https://jp.mercari.com/search?afid=1698778303&amp;keyword=%E3%83%88%E3%83%AC%E3%83%BC%E3%83%87%E3%82%A3%E3%83%B3%E3%82%B0%E3%82%AC%E3%83%BC%E3%83%89" target="_blank" rel="noopener noreferrer nofollow">メルカリでトレーディングカードを見る（販売手数料 10%） <span className="block text-[11px] font-normal text-slate-400">広告・アフィリエイトリンク</span></a>
+                  <a className="block rounded-xl border border-slate-500/70 bg-[#050b18] p-3 text-center font-black text-white" href="https://fril.jp/" target="_blank" rel="noopener noreferrer">楽天ラクマ（販売手数料 4.5〜10%）↗</a>
+                  <a className="block rounded-xl border border-slate-500/70 bg-[#050b18] p-3 text-center font-black text-white" href="https://snkrdunk.com/" target="_blank" rel="noopener noreferrer">スニーカーダンク（販売手数料は最新条件を確認）↗</a>
                   <p className="text-[11px] leading-5 text-slate-400">※楽天ラクマ・スニーカーダンクは代表例として掲載する通常リンクです。ラクマは販売実績に応じて手数料率が変動します。</p>
                 </div>
               )}
               {m.kind === "auction" && (
                 <div className="mt-4 text-sm">
-                  <a className="block rounded-xl border border-slate-600/50 p-3 font-bold text-blue-200" href="https://auctions.yahoo.co.jp/" target="_blank" rel="noopener noreferrer">Yahoo!オークション（落札システム利用料 10%）↗</a>
+                  <a className="block rounded-xl border border-slate-500/70 bg-[#050b18] p-3 text-center font-black text-white" href="https://auctions.yahoo.co.jp/" target="_blank" rel="noopener noreferrer">Yahoo!オークション（落札システム利用料 10%）↗</a>
                   <p className="mt-2 text-[11px] leading-5 text-slate-400">※代表例。広告リンクではありません。一部カテゴリは料金体系が異なります。</p>
                 </div>
               )}
