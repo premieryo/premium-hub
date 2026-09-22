@@ -101,10 +101,19 @@ export default function Page() {
         </section>
 
         <section className="mt-4 rounded-2xl border border-blue-400/20 bg-[#09152c] p-5">
-          <h2 className="text-xl font-black">🤝 買取サービスへのリンクについて</h2>
+          <p className="text-xs font-black tracking-[.16em] text-blue-300">BUYBACK SERVICE</p>
+          <h2 className="mt-2 text-xl font-black">🏪 駿河屋の買取を確認する</h2>
           <p className="mt-3 text-sm leading-6 text-slate-300">
-            プレミア速報では、利用条件を確認できた買取サービスを比較対象として掲載します。
-            広告・紹介プログラムを利用する場合は広告であることを明示し、提携していないサービスを広告のように見せません。
+            カード・ホビーなどを取り扱う駿河屋の買取ページです。査定方法や対象商品、最新の条件を確認してから利用してください。
+          </p>
+          <p className="mt-2 text-xs leading-5 text-slate-400">※このリンクは駿河屋のアフィリエイトリンクです。</p>
+          <div className="mt-4 overflow-x-auto rounded-xl bg-white p-3 text-center">
+            <a href="https://affiliate.suruga-ya.jp/modules/af/af_jump.php?user_id=5447&amp;goods_url=https%3A%2F%2Fwww.suruga-ya.jp%2Fman%2Fkaitori%2Fkaitoritop.html" rel="nofollow">
+              <img src="https://www.suruga-ya.jp/pics/affiliate/banner2022/buy/affi_buy_468_60.jpg" width="468" height="60" alt="駿河屋あんしん＆らくらく買取" title="駿河屋あんしん＆らくらく買取" />
+            </a>
+          </div>
+          <p className="mt-3 text-xs leading-5 text-slate-400">
+            プレミア速報では、利用条件を確認できたサービスのみ紹介します。買取価格や条件は変動するため、申込時に公式ページで確認してください。
           </p>
         </section>
       </div>
