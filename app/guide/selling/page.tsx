@@ -9,9 +9,9 @@ export const metadata: Metadata = {
 };
 
 const methods = [
-  { icon: "🏪", title: "買取店", good: "査定から現金化まで早く、出品・購入者対応が不要", watch: "店舗・サービスごとに査定額や条件が違うので比較が重要", fit: "手間を減らして早く売りたい人" },
-  { icon: "📱", title: "フリマ", good: "自分で販売価格を決めやすく、相場を見ながら出品できる", watch: "販売手数料・送料・梱包・購入者対応を手取りから差し引く", fit: "手間をかけても手取りを高めたい人" },
-  { icon: "🔨", title: "オークション", good: "需要が強い商品は入札によって価格が動く可能性がある", watch: "必ず高くなるとは限らず、手数料・送料・出品条件の確認が必要", fit: "需要が強い商品の入札を待てる人" },
+  { icon: "🏪", title: "買取店", good: "査定から現金化まで早く、出品・購入者対応が不要", watch: "店舗・サービスごとに査定額や条件が違うので比較が重要", fit: "手間を減らして早く売りたい人", kind: "buyback" },
+  { icon: "📱", title: "フリマ", good: "自分で販売価格を決めやすく、相場を見ながら出品できる", watch: "販売手数料・送料・梱包・購入者対応を手取りから差し引く", fit: "手間をかけても手取りを高めたい人", kind: "flea" },
+  { icon: "🔨", title: "オークション", good: "需要が強い商品は入札によって価格が動く可能性がある", watch: "必ず高くなるとは限らず、手数料・送料・出品条件の確認が必要", fit: "需要が強い商品の入札を待てる人", kind: "auction" },
 ];
 
 const checks = [
@@ -55,6 +55,24 @@ export default function Page() {
               <p className="mt-3 text-sm leading-6 text-slate-300"><b className="text-white">メリット：</b>{m.good}</p>
               <p className="mt-2 text-sm leading-6 text-slate-300"><b className="text-white">注意：</b>{m.watch}</p>
               <p className="mt-3 rounded-xl bg-slate-950/60 p-3 text-sm font-bold text-blue-200">向いている人：{m.fit}</p>
+              {m.kind === "buyback" && (
+                <a className="mt-4 block rounded-xl border border-blue-400/30 bg-blue-500/10 p-3 text-center text-sm font-black text-blue-200" href="https://affiliate.suruga-ya.jp/modules/af/af_jump.php?user_id=5447&amp;goods_url=https%3A%2F%2Fwww.suruga-ya.jp%2Fman%2Fkaitori%2Fkaitoritop.html" rel="nofollow">
+                  駿河屋の買取を確認する <span className="block text-[11px] font-normal text-slate-400">広告・アフィリエイトリンク</span>
+                </a>
+              )}
+              {m.kind === "flea" && (
+                <div className="mt-4 space-y-2 text-sm">
+                  <a className="block rounded-xl border border-slate-600/50 p-3 font-bold text-blue-200" href="https://jp.mercari.com/" target="_blank" rel="noopener noreferrer">メルカリ（販売手数料 10%）↗</a>
+                  <a className="block rounded-xl border border-slate-600/50 p-3 font-bold text-blue-200" href="https://fril.jp/" target="_blank" rel="noopener noreferrer">楽天ラクマ（販売手数料 4.5〜10%）↗</a>
+                  <p className="text-[11px] leading-5 text-slate-400">※代表例。広告リンクではありません。ラクマは販売実績に応じて手数料率が変動します。</p>
+                </div>
+              )}
+              {m.kind === "auction" && (
+                <div className="mt-4 text-sm">
+                  <a className="block rounded-xl border border-slate-600/50 p-3 font-bold text-blue-200" href="https://auctions.yahoo.co.jp/" target="_blank" rel="noopener noreferrer">Yahoo!オークション（落札システム利用料 10%）↗</a>
+                  <p className="mt-2 text-[11px] leading-5 text-slate-400">※代表例。広告リンクではありません。一部カテゴリは料金体系が異なります。</p>
+                </div>
+              )}
             </section>
           ))}
         </div>
@@ -100,22 +118,7 @@ export default function Page() {
           </p>
         </section>
 
-        <section className="mt-4 rounded-2xl border border-blue-400/20 bg-[#09152c] p-5">
-          <p className="text-xs font-black tracking-[.16em] text-blue-300">BUYBACK SERVICE</p>
-          <h2 className="mt-2 text-xl font-black">🏪 駿河屋の買取を確認する</h2>
-          <p className="mt-3 text-sm leading-6 text-slate-300">
-            カード・ホビーなどを取り扱う駿河屋の買取ページです。査定方法や対象商品、最新の条件を確認してから利用してください。
-          </p>
-          <p className="mt-2 text-xs leading-5 text-slate-400">※このリンクは駿河屋のアフィリエイトリンクです。</p>
-          <div className="mt-4 overflow-x-auto rounded-xl bg-white p-3 text-center">
-            <a href="https://affiliate.suruga-ya.jp/modules/af/af_jump.php?user_id=5447&amp;goods_url=https%3A%2F%2Fwww.suruga-ya.jp%2Fman%2Fkaitori%2Fkaitoritop.html" rel="nofollow">
-              <img src="https://www.suruga-ya.jp/pics/affiliate/banner2022/buy/affi_buy_468_60.jpg" width="468" height="60" alt="駿河屋あんしん＆らくらく買取" title="駿河屋あんしん＆らくらく買取" />
-            </a>
-          </div>
-          <p className="mt-3 text-xs leading-5 text-slate-400">
-            プレミア速報では、利用条件を確認できたサービスのみ紹介します。買取価格や条件は変動するため、申込時に公式ページで確認してください。
-          </p>
-        </section>
+
       </div>
     </main>
   );
