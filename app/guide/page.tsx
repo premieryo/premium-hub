@@ -21,6 +21,5 @@ export default function GuidePage() {
     <TopNavigation /><div className="mt-5"><AffiliateDisclosure /></div>
     <header className="mt-8"><p className="text-xs font-black tracking-[.2em] text-blue-400">BEGINNER&apos;S GUIDE</p><h1 className="mt-2 text-3xl font-black sm:text-4xl">📖 プレミア商品 初心者ガイド</h1><p className="mt-4 leading-7 text-slate-300">当選・購入した後に迷いやすいことを、目的別に詳しく確認できます。</p></header>
     <div className="mt-8 grid gap-4">{sections.map((s) => <Link key={s.href} href={s.href} className="group rounded-2xl border border-blue-400/20 bg-[#09152c] p-5 transition hover:border-blue-300 sm:p-6"><h2 className="text-xl font-black">{s.icon} {s.title}</h2><p className="mt-3 leading-7 text-slate-300">{s.body}</p><p className="mt-4 text-sm font-black text-blue-300">{s.cta} →</p></Link>)}</div>
-    <section className="mt-8 rounded-2xl border border-orange-400/25 bg-orange-500/5 p-5"><h2 className="font-black text-orange-200">相場・販売情報も確認</h2><div className="mt-4 grid gap-3 sm:grid-cols-3"><Link className="rounded-xl bg-slate-900 p-3 text-center font-bold" href="/ranking">現在相場</Link><Link className="rounded-xl bg-slate-900 p-3 text-center font-bold" href="/lottery">抽選情報</Link><Link className="rounded-xl bg-slate-900 p-3 text-center font-bold" href="/restock">再販情報</Link></div></section>
   </div></main>;
 }
