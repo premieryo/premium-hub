@@ -5,8 +5,8 @@ import Link from "next/link";
 import TopNavigation from "@/components/TopNavigation";
 
 export const metadata: Metadata = {
-  title: "カード鑑定サービス比較｜初心者ガイド｜プレミア速報",
-  description: "PSAなどのカード鑑定を利用する前に、評価・費用・価値・期待値の考え方を初心者向けに解説。",
+  title: "PSA鑑定とは？カード鑑定の費用・評価・期待値｜プレミア速報",
+  description: "PSAをはじめとするカード鑑定サービスについて、評価の見方、費用、価値や期待値の考え方を初心者向けに解説します。",
   alternates: { canonical: "/guide/grading" },
 };
 
