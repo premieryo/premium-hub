@@ -3,8 +3,8 @@ import AffiliateDisclosure from "@/components/AffiliateDisclosure";
 import TopNavigation from "@/components/TopNavigation";
 
 export const metadata: Metadata = {
-  title: "プレミア商品の売り方比較｜初心者ガイド｜プレミア速報",
-  description: "カードや未開封BOXなどを売るときの買取店・フリマ・オークションの違いと、手取りの考え方を初心者向けに解説。",
+  title: "トレカの売り方・買取比較｜手取りと販売方法｜プレミア速報",
+  description: "トレカや未開封BOXの売り方を解説。買取店・フリマ・オークションの違いと、手数料や送料を含めた手取りの考え方を比較します。",
   alternates: { canonical: "/guide/selling" },
 };
 

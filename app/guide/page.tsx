@@ -4,8 +4,8 @@ import AffiliateDisclosure from "@/components/AffiliateDisclosure";
 import TopNavigation from "@/components/TopNavigation";
 
 export const metadata: Metadata = {
-  title: "初心者ガイド｜プレミア速報",
-  description: "プレミア商品を手に入れた後の保管、鑑定、売却、梱包・発送を初心者向けに解説。",
+  title: "トレカ初心者ガイド｜保管・鑑定・売却・梱包｜プレミア速報",
+  description: "トレカや未開封BOXを手に入れた後の保管方法、カード鑑定、売り方・買取、梱包・発送を初心者向けに解説。",
   alternates: { canonical: "/guide" },
 };
 

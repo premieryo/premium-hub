@@ -4,8 +4,8 @@ import AffiliateLinks from "@/components/AffiliateLinks";
 import TopNavigation from "@/components/TopNavigation";
 
 export const metadata: Metadata = {
-  title: "保管方法・保管用品｜初心者ガイド｜プレミア速報",
-  description: "カード、未開封BOX、フィギュア・ベイブレードの保管方法と必要な保管用品を解説。",
+  title: "トレカの保管方法｜スリーブ・ローダー・BOX保護｜プレミア速報",
+  description: "トレカ、未開封BOX、フィギュア・ベイブレードの保管方法を解説。スリーブ、ローダー、保護ケースなど必要な保管用品も紹介します。",
   alternates: { canonical: "/guide/storage" },
 };
 

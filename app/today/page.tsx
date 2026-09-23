@@ -6,8 +6,8 @@ import { genres, type LotteryItem, type RestockItem } from "@/data/types";
 import { getGenreContext } from "@/lib/genres";
 
 export const metadata: Metadata = {
-  title: "今日の注目｜プレミア速報",
-  description: "今日締切の抽選、相場上昇中、新着再販情報を全ジャンル横断で確認。",
+  title: "今日のトレカ情報｜抽選締切・相場・再販｜プレミア速報",
+  description: "今日締切の抽選、相場上昇中の商品、新着再販情報をトレカ・ホビーの各ジャンルからまとめて確認できます。",
   alternates: { canonical: "/today" },
 };
 
