@@ -5,7 +5,7 @@ import TopNavigation from "@/components/TopNavigation";
 
 export const metadata: Metadata = {
   title: "保管方法・保管用品｜初心者ガイド｜プレミア速報",
-  description: "カード、未開封BOX、フィギュアの保管方法と必要な保管用品を解説。",
+  description: "カード、未開封BOX、フィギュア・ベイブレードの保管方法と必要な保管用品を解説。",
   alternates: { canonical: "/guide/storage" },
 };
 
@@ -21,9 +21,9 @@ const items = [
     products: ["未開封BOX用保護ケース", "収納ボックス", "防湿・乾燥用品"],
   },
   {
-    title: "フィギュア",
-    steps: ["外箱を含めて状態を維持する", "紫外線とホコリを避ける", "重ねすぎず箱の変形を防ぐ"],
-    products: ["フィギュア保護ケース", "ディスプレイケース", "防湿・ホコリ対策用品"],
+    title: "フィギュア・ベイブレード",
+    steps: ["外箱・パッケージを含めて状態を維持する", "紫外線とホコリを避ける", "重ねすぎず箱やパッケージの変形を防ぐ"],
+    products: ["フィギュア・ベイブレードの保護ケース", "ディスプレイケース", "防湿・ホコリ対策用品"],
   },
 ];
 
@@ -94,7 +94,7 @@ export default function Page() {
               </section>
               {index === 0 ? <CardProtectionGuide /> : null}
               {index === 1 ? <AffiliateLinks category="storage" useCase="box-cases" title="おすすめのBOX保護ケース" /> : null}
-              {index === 2 ? <AffiliateLinks category="storage" useCase="figure-cases" title="おすすめのフィギュアケース" /> : null}
+              {index === 2 ? <AffiliateLinks category="storage" useCase="figure-cases" title="おすすめのフィギュア・ベイブレード用ケース" /> : null}
             </div>
           ))}
         </div>
