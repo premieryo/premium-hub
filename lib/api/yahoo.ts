@@ -7,8 +7,10 @@ export type YahooItem = {
   inStock: boolean;
   condition: string;
   janCode?: string;
-  image?: {
-    medium?: string;
+  exImage?: {
+    url?: string;
+    width?: number;
+    height?: number;
   };
   seller: {
     name: string;
@@ -126,6 +128,7 @@ export async function searchYahooItems(
     sort: "-score",
     condition: "new",
     in_stock: "true",
+    image_size: "300",
   });
 
   const url = buildYahooItemSearchUrl(params, {
