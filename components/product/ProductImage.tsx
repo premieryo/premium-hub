@@ -19,6 +19,10 @@ const sourcePolicies: Partial<Record<ProductImageSource, SourcePolicy>> = {
     imageHosts: new Set(["m.media-amazon.com"]),
     clickHosts: new Set(["amazon.co.jp", "www.amazon.co.jp"]),
   },
+  valuecommerce: {
+    imageHosts: new Set(["item-shopping.c.yimg.jp"]),
+    clickHosts: new Set(["ck.jp.ap.valuecommerce.com"]),
+  },
 };
 
 function parseHttpsUrl(value: string) {
