@@ -181,7 +181,18 @@ function createPlan(genre: Genre, product: Product, old: RankingItem | undefined
     throw new Error(`異常価格ガード: 前回比${rate.toFixed(2)}%（許容±${MAX_CHANGE_RATE}%）`);
   }
   const fetchedAt = new Date().toISOString();
-  const productData: Product = { ...product, marketPrice: selected.price, shop: selected.seller.name, url: selected.url, updatedAt: fetchedAt };
+  const imageSrc = selected.image?.medium;
+  const imageAsset = imageSrc?.startsWith("https://item-shopping.c.yimg.jp/") && selected.url.startsWith("https://ck.jp.ap.valuecommerce.com/")
+    ? { source: "valuecommerce" as const, src: imageSrc, clickUrl: selected.url, alt: selected.name, width: 300, height: 300, fetchedAt }
+    : undefined;
+  const productData: Product = {
+    ...product,
+    marketPrice: selected.price,
+    shop: selected.seller.name,
+    url: selected.url,
+    updatedAt: fetchedAt,
+    ...(imageAsset ? { imageSource: "valuecommerce" as const, imageAlt: selected.name, imageEnabled: true, imageAsset } : {}),
+  };
   delete (productData as ProductWithLease)._priceUpdateLease;
   const rankingData: RankingItem = {
     ...(old ?? {}), id: product.id, genre, product: old?.product ?? product.name,
