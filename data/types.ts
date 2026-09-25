@@ -48,6 +48,7 @@ export type Product = {
   imageSourceId?: string;
   imageAlt?: string;
   imageEnabled?: boolean;
+  imageAsset?: ProductImageAsset;
   affiliateUrl?: string;
   shop?: string;
   marketPrice?: number;
