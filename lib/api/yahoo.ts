@@ -7,6 +7,9 @@ export type YahooItem = {
   inStock: boolean;
   condition: string;
   janCode?: string;
+  image?: {
+    medium?: string;
+  };
   seller: {
     name: string;
   };
