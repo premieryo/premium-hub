@@ -10,6 +10,10 @@ export const SNKRDUNK_EXTERNAL_LINK_PROPS = {
 // Add a product ID here if its search results are found to be misleading.
 const hiddenProductIds = new Set<string>();
 
+const directProductUrls = new Map<string, string>([
+  ["30th-celebration-premium-deck-set-espeon-umbreon", "https://snkrdunk.com/apparels/881423"],
+]);
+
 function compactSearchTerm(value: string): string {
   return value
     .replace(/[「」［］\[\]]/g, " ")
@@ -38,6 +42,8 @@ export function buildSnkrdunkSearchTerm(product: Product): string | null {
 }
 
 export function buildSnkrdunkSearchUrl(product: Product): string | null {
+  const directUrl = directProductUrls.get(product.id);
+  if (directUrl) return directUrl;
   const keywords = buildSnkrdunkSearchTerm(product);
   if (!keywords) return null;
   const url = new URL(SNKRDUNK_SEARCH_URL);
