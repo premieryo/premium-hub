@@ -34,7 +34,7 @@ export default async function Today() {
   const all=contextes(contexts);
   const todayLotteries=sortByDeadline(all.filter((item)=>isToday(item,todayKey)));
   const acceptingLotteries=sortByDeadline(all.filter((item)=>{const s=getLotteryStatus(item,now);return s===lotteryStatuses.accepting||s===lotteryStatuses.closingSoon}));
-  const resultSchedule=all.map(item=>({item,key:resultDateKey(item.resultDate)})).filter((row):row is {item:typeof all[number];key:string}=>Boolean(row.key)&&row.key>=todayKey).sort((a,b)=>a.key.localeCompare(b.key));
+  const resultSchedule=all.map(item=>({item,key:resultDateKey(item.resultDate)})).filter((row):row is {item:typeof all[number];key:string}=>typeof row.key==="string").filter(row=>row.key>=todayKey).sort((a,b)=>a.key.localeCompare(b.key));
   const resultDays=[...new Set(resultSchedule.map(row=>row.key))].slice(0,14);
   return <main className="min-h-screen bg-[#050b18] text-white"><div className="mx-auto max-w-5xl px-4 py-6 sm:px-6"><TopNavigation/><div className="mt-5"><AffiliateDisclosure/></div>
     <header className="mt-8"><p className="text-xs font-black tracking-[.2em] text-blue-400">TODAY&apos;S LOTTERY</p><h1 className="mt-2 text-3xl font-black">今日の注目</h1><p className="mt-3 text-slate-300">今日締切の抽選と、いま応募できる抽選だけをまとめています。</p></header>
