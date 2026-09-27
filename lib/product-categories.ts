@@ -32,7 +32,10 @@ export function splitBoosterProductsByRelease(products: Product[], releasedLimit
 
 export function rankingInCategory(ranking: RankingItem[], products: Product[], category: ProductCategory) {
   const allowed = new Set(productsInCategory(products, category).map((product) => product.id));
-  return ranking.filter((item) => allowed.has(item.id));
+  const releaseDateById = new Map(products.map((product) => [product.id, product.releaseDate]));
+  return ranking
+    .filter((item) => allowed.has(item.id))
+    .sort((a, b) => (releaseDateById.get(b.id) ?? "").localeCompare(releaseDateById.get(a.id) ?? "") || a.id.localeCompare(b.id));
 }
 
 export const RETAIL_COMPARISON_THRESHOLDS = { premium: 50, aboveRetail: 10, nearRetail: -10 } as const;
