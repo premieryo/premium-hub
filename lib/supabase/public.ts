@@ -11,7 +11,10 @@ export function createPublicClient() {
       persistSession: false,
     },
     global: {
-      fetch: (input, init) => fetch(input, { ...init, next: { revalidate: 60 } }),
+      // Public content is already refreshed explicitly after cron/admin writes.
+      // Avoid caching Supabase REST responses here so newly saved product images
+      // and other content are visible on the next page render.
+      fetch: (input, init) => fetch(input, { ...init, cache: "no-store" }),
     },
   });
 }
