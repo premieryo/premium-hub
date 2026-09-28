@@ -116,6 +116,7 @@ export function mergeOfficialCardCatalog(products: Product[], genre: Product["ge
       imageSourceId: existing.imageSourceId,
       imageAlt: existing.imageAlt,
       imageEnabled: existing.imageEnabled,
+      imageAsset: existing.imageAsset,
     } : official;
     const fallback = fallbackCommerce.get(official.id);
     merged.set(official.id, {
