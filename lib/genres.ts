@@ -105,6 +105,11 @@ export async function getGenreContext(value: string) {
       return (data ?? []).map((row) => row.data);
     }));
     [products, lottery, restock, ranking] = results as [GenreData["products"], GenreData["lottery"], GenreData["restock"], GenreData["ranking"]];
+    // Supabase rows are the mutable overlay (prices/images/admin edits), while
+    // the checked-in catalog remains the source of stable product metadata.
+    // Merge both so a partial DB row never drops name/releaseDate/etc., and a
+    // newly fetched imageAsset is preserved for public product cards.
+    products = mergeOfficialCardCatalog(products, value);
   } catch (error) {
     console.error(`[${value}] Supabaseの読み込みに失敗したためJSONを使用します。`, error);
     [products, lottery, restock, ranking] = await Promise.all([
