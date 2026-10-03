@@ -31,6 +31,7 @@ export default function GuidePage() {
         width={180}
         height={270}
         sizes="(max-width: 640px) 100vw, 768px"
+        unoptimized
         className="h-auto w-full scale-[1.04] object-cover"
       />
     </section>
