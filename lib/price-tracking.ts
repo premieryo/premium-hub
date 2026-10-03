@@ -2,6 +2,7 @@ import type { Genre, Product } from "@/data/types";
 import { getProductCategory } from "./product-categories";
 
 const limitedGenres = new Set<Genre>(["pokemon", "onepiece", "dragonball"]);
+const CARD_GENRE_TRACKING_LIMIT = 10;
 
 function getTokyoDateString(date: Date) {
   const parts = Object.fromEntries(
@@ -28,14 +29,20 @@ export function selectPriceTrackingProducts(
   products: Product[],
   now = new Date(),
 ) {
-  const eligible = products
+  const genreProducts = products
     .filter((product) => product.genre === genre)
-    .filter((product) => product.priceTrackingEnabled === true)
     .filter((product) => !limitedGenres.has(genre) || getProductCategory(product) === "booster-box")
     .filter((product) => isReleasedInTokyo(product, now))
     .sort((a, b) => b.releaseDate.localeCompare(a.releaseDate) || a.id.localeCompare(b.id));
 
-  return eligible;
+  if (limitedGenres.has(genre)) {
+    // Card genres are a rolling market window: always follow the latest 10
+    // released booster boxes. This avoids stale manual tracking flags leaving
+    // newer products at "相場集計前".
+    return genreProducts.slice(0, CARD_GENRE_TRACKING_LIMIT);
+  }
+
+  return genreProducts.filter((product) => product.priceTrackingEnabled === true);
 }
 
 export function selectPublicRankingProducts(
