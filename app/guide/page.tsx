@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import AffiliateDisclosure from "@/components/AffiliateDisclosure";
 import TopNavigation from "@/components/TopNavigation";
@@ -17,9 +18,21 @@ const sections = [
 ];
 
 export default function GuidePage() {
-  return <main className="min-h-screen bg-[#050b18] text-white"><div className="mx-auto max-w-4xl px-4 py-6 sm:px-6">
+  return <main className="min-h-screen overflow-hidden bg-[#050b18] text-white"><div className="mx-auto max-w-4xl px-4 py-6 sm:px-6">
     <TopNavigation /><div className="mt-5"><AffiliateDisclosure /></div>
     <header className="mt-8"><p className="text-xs font-black tracking-[.2em] text-blue-400">BEGINNER&apos;S GUIDE</p><h1 className="mt-2 text-3xl font-black sm:text-4xl">📖 プレミア商品 初心者ガイド</h1><p className="mt-4 leading-7 text-slate-300">当選・購入した後に迷いやすいことを、目的別に詳しく確認できます。</p></header>
     <div className="mt-8 grid gap-4">{sections.map((s) => <Link key={s.href} href={s.href} className="group rounded-2xl border border-blue-400/20 bg-[#09152c] p-5 transition hover:border-blue-300 sm:p-6"><h2 className="text-xl font-black">{s.icon} {s.title}</h2><p className="mt-3 leading-7 text-slate-300">{s.body}</p><p className="mt-4 text-sm font-black text-blue-300">{s.cta} →</p></Link>)}</div>
+
+    <section aria-label="初心者ガイドのマスコット" className="relative -mx-4 mt-10 overflow-hidden border-t border-blue-400/10 sm:-mx-6">
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-20 bg-gradient-to-b from-[#050b18] to-transparent" />
+      <Image
+        src="/images/guide-mascot.jpg"
+        alt="たくさんの商品を前に、どれから確認するか考えているプレミア速報のマスコット"
+        width={180}
+        height={270}
+        sizes="(max-width: 640px) 100vw, 768px"
+        className="h-auto w-full scale-[1.04] object-cover"
+      />
+    </section>
   </div></main>;
 }
