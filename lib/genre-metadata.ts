@@ -61,8 +61,8 @@ export async function generateGenreMetadata(
   const currentPage = pageMetadata[page];
 
   return {
-    title: currentPage.title(config.name),
-    description: currentPage.description(config.name),
+    title: currentPage.title(config.name).replace(/[\s]BOX相場/g, ["beyblade", "figure"].includes(genre) ? " 注目商品相場" : " BOX相場"),
+    description: ["beyblade", "figure"].includes(genre) ? currentPage.description(config.name).replace(/BOX相場/g, "注目商品相場") : currentPage.description(config.name),
     alternates: {
       canonical: `/${config.slug}${currentPage.path}`,
     },

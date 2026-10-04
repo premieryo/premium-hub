@@ -14,6 +14,8 @@
     "update:prices": "tsx scripts/update.ts",
     "update:prices:apply": "tsx scripts/update.ts --apply",
     "update:pokemon": "tsx scripts/updatePokemon.ts",
+    "images:dry-run": "tsx scripts/backfillProductImages.ts",
+    "images:apply": "tsx scripts/backfillProductImages.ts --apply",
     "test:yahoo": "tsx scripts/testYahoo.ts",
     "catalog:dry-run": "tsx --env-file=../.env.local scripts/syncCardCatalog.ts",
     "catalog:apply": "tsx --env-file=../.env.local scripts/syncCardCatalog.ts --apply",

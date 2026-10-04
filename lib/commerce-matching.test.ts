@@ -4,7 +4,7 @@ import { findMultipleItemExpression } from "./commerce-matching";
 import { evaluateProductIdentity } from "./commerce-matching";
 import type { Product } from "@/data/types";
 import type { YahooItem } from "@/lib/api/yahoo";
-import { validateCandidate } from "@/scripts/updateGenrePrices";
+import { selectSafePriceCandidate, validateCandidate } from "@/scripts/updateGenrePrices";
 
 for (const title of ["STORY BOOSTER 01 BOX", "FB01 BOX", "FB10 BOX", "OP-01 BOX", "OP-17 BOX", "SB01 BOX", "ST01 BOX", "Vol.1 BOX", "第1弾 BOX"]) {
   test(`シリーズ番号を数量と誤認しない: ${title}`, () => assert.equal(findMultipleItemExpression(title), null));
@@ -24,3 +24,26 @@ const dragonBallProduct: Product = { id: "fb01", name: "ブースターパック
 const sealedBox: YahooItem = { name: "覚醒の鼓動 FB01 BOX 新品未開封 テープ付き", price: 5000, url: "https://example.com/fb01", inStock: true, condition: "new", seller: { name: "shop" } };
 test("シリーズ番号の完全一致を必須にする", () => assert.doesNotThrow(() => validateCandidate(dragonBallProduct, sealedBox)));
 test("FB01とFB10を誤一致しない", () => assert.throws(() => validateCandidate(dragonBallProduct, { ...sealedBox, name: "覚醒の鼓動 FB10 BOX 新品未開封 テープ付き" })));
+
+for (const title of ["商品12BOXセット", "商品10箱", "新品【2BOX】", "商品 BOX×12", "商品 20個セット"]) {
+  test(`境界・2桁数量を検出: ${title}`, () => assert.ok(findMultipleItemExpression(title)));
+}
+test("ショップが語句を挿入しても名称・番号を照合", () => assert.doesNotThrow(() => validateCandidate(
+  { ...dragonBallProduct, searchWord: "CROSS FORCE FB10 BOX", seriesNumber: "FB10" },
+  { ...sealedBox, name: "CROSS FORCE ドラゴンボール FB-10 新品未開封 BOX" })));
+for (const suffix of [" 1パック販売", " 英語版", " 12BOXセット", " FB02", " 選べる商品"]) {
+  test(`BOX価格への混入を除外: ${suffix}`, () => assert.throws(() => validateCandidate(dragonBallProduct, { ...sealedBox, name: sealedBox.name + suffix })));
+}
+test("JAN不一致は通常BOXでも除外", () => assert.throws(() => validateCandidate(
+  { ...dragonBallProduct, jan: "4580000000001" }, { ...sealedBox, janCode: "4580000000002" })));
+test("通常版にデラックス版を混入させない", () => assert.throws(() => validateCandidate(
+  { ...dragonBallProduct, genre: "pokemon", searchWord: "ブラックボルト BOX" },
+  { ...sealedBox, name: "ブラックボルト デラックス BOX 新品未開封" })));
+
+test("不適切な先頭候補の後から安全なBOXを採用", () => assert.equal(selectSafePriceCandidate(dragonBallProduct,
+  [{ ...sealedBox, name: sealedBox.name + " 12BOXセット" }, sealedBox]), sealedBox));
+test("通常のBOX封入パック数は採用", () => assert.doesNotThrow(() => validateCandidate(dragonBallProduct,
+  { ...sealedBox, name: sealedBox.name + " 24パック入り" })));
+test("対応商品名入りのBOXローダーを除外", () => assert.throws(() => validateCandidate(
+  { ...dragonBallProduct, genre: "pokemon", searchWord: "ブラックボルト BOX" },
+  { ...sealedBox, name: "ブラックボルト BOX ローダー 保管用 未開封シュリンク付きBOX対応" })));
