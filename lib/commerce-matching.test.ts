@@ -47,3 +47,22 @@ test("通常のBOX封入パック数は採用", () => assert.doesNotThrow(() => 
 test("対応商品名入りのBOXローダーを除外", () => assert.throws(() => validateCandidate(
   { ...dragonBallProduct, genre: "pokemon", searchWord: "ブラックボルト BOX" },
   { ...sealedBox, name: "ブラックボルト BOX ローダー 保管用 未開封シュリンク付きBOX対応" })));
+
+// Reproduce accessories advertising compatible unopened BOXes in their title.
+for (const definition of [
+  { genre: "pokemon", query: "ブラックボルト BOX", series: undefined },
+  { genre: "pokemon", query: "ホワイトフレア BOX", series: undefined },
+  { genre: "onepiece", query: "世界最強の戦士 OP-17 BOX", series: "OP-17" },
+  { genre: "dragonball", query: "STORY BOOSTER 01 ST01 BOX", series: "ST01" },
+] as const) {
+  const product: Product = { ...dragonBallProduct, genre: definition.genre, searchWord: definition.query, seriesNumber: definition.series };
+  const genuine = { ...sealedBox, name: `${definition.query} 新品未開封 シュリンク付き`, price: 13500 };
+  for (const accessory of ["ローダー", "保管用", "保護ケース", "カードケース", "BOXケース", "UVカット", "空箱", "箱のみ", "アクリルケース", "マグネットケース", "ディスプレイケース", "収納ケース", "BOXプロテクター", "box protector", "storage case"]) {
+    test(`${definition.genre}/${definition.query}: ${accessory}を除外し本物1BOXを選択`, () => {
+      const fake = { ...genuine, name: `${definition.query} ${accessory} 未開封シュリンク付きBOX対応`, price: 1180 };
+      assert.throws(() => validateCandidate(product, fake));
+      assert.equal(selectSafePriceCandidate(product, [fake, genuine]), genuine);
+      assert.equal(selectSafePriceCandidate(product, [fake]), undefined);
+    });
+  }
+}

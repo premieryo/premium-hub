@@ -67,7 +67,7 @@ export function validateListingIdentity(product: Product, item: YahooItem) {
     throw new Error("JANコードが一致しません。");
   }
   const title = normalizeCommerceText(item.name);
-  if (product.type === "box" && /ローダー|保管用|保護ケース|カードケース|boxケース|uvカット|空箱|箱のみ/.test(title)) throw new Error("BOX用保管用品・空箱を検出");
+  if (product.type === "box" && /ローダー|保管用|保護ケース|カードケース|boxケース|uvカット|空箱|箱のみ|アクリルケース|マグネットケース|ディスプレイケース|収納ケース|プロテクター|boxprotector|storagecase/.test(title)) throw new Error("BOX用保管用品・空箱を検出");
   if (/英語版|韓国語版|中国語版|海外版|english|korean|chinese/.test(title)) throw new Error("海外版を検出");
   if (product.genre === "pokemon" && product.productCategory !== "collection-box") {
     for (const variant of ["デラックス", "futuristic", "プレミアムデッキセット"]) {
