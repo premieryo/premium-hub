@@ -36,6 +36,6 @@ export const genreConfigs: Record<Genre, GenreConfig> = {
   },
   onepiece: { slug: "onepiece", name: "ワンピースカード", icon: "🏴‍☠️", description: "ワンピースカードの抽選・再販・相場情報を紹介します。", itemLabel: "ワンピースカード・BOX", guideItems: commonGuideItems },
   dragonball: { slug: "dragonball", name: "ドラゴンボールカード", icon: "🐉", description: "ドラゴンボールカードの抽選・再販・相場情報を紹介します。", itemLabel: "ドラゴンボールカード・BOX", guideItems: commonGuideItems },
-  beyblade: { slug: "beyblade", name: "ベイブレード", icon: "⚙️", description: "ベイブレードの抽選・再販・相場情報を紹介します。", itemLabel: "ベイブレード商品", guideItems: commonGuideItems },
+  beyblade: { slug: "beyblade", name: "その他注目商品", icon: "✨", description: "ベイブレード・フィギュアなど、話題の限定・抽選・再販商品を紹介します。", itemLabel: "注目商品", guideItems: commonGuideItems },
   figure: { slug: "figure", name: "フィギュア", icon: "🎁", description: "フィギュアの抽選・再販・相場情報を紹介します。", itemLabel: "フィギュア", guideItems: commonGuideItems },
 };

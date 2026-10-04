@@ -24,8 +24,8 @@ export default function GenreTopPage({ config, data }: { config: GenreConfig; da
 
       <nav className="mt-6 grid grid-cols-2 gap-3" aria-label={`${config.name}の商品・抽選・相場メニュー`}>
         <SectionLink href={`/${config.slug}/lottery`} title="抽選情報" text="現在受付中の抽選を確認" />
-        <SectionLink href={`/${config.slug}/products`} title="歴代BOX" text="通常BOXを探す" />
-        <SectionLink href={`/${config.slug}/ranking`} title="BOX相場" text="店頭の定価と比べる" />
+        <SectionLink href={`/${config.slug}/products`} title={isCardGenre ? "歴代BOX" : "注目商品"} text={isCardGenre ? "通常BOXを探す" : "話題の商品を探す"} />
+        <SectionLink href={`/${config.slug}/ranking`} title={isCardGenre ? "BOX相場" : "注目商品相場"} text={isCardGenre ? "店頭の定価と比べる" : "注目商品の相場を確認"} />
         {isCardGenre && <SectionLink href={`/${config.slug}/collections`} title="コレクションBOX" text="限定・セット商品を探す" />}
         {isCardGenre && <SectionLink href={`/${config.slug}/collection-ranking`} title="コレクション相場" text="限定品の相場を見る" />}
       </nav>
@@ -81,7 +81,7 @@ export default function GenreTopPage({ config, data }: { config: GenreConfig; da
       </section>
 
       <section className="mt-10 grid gap-4 md:grid-cols-3">
-        <SectionLink href={`/${config.slug}/ranking`} title="📈 高騰ランキング" text="追跡商品の価格と変動を確認" />
+        <SectionLink href={`/${config.slug}/ranking`} title={isCardGenre ? "📈 高騰ランキング" : "📈 注目商品相場"} text="追跡商品の価格と変動を確認" />
         <SectionLink href={`/${config.slug}/restock`} title="🛒 再販情報" text="確認済みの店舗・通販情報を掲載" />
         <SectionLink href={`/${config.slug}/guide`} title="📖 初心者ガイド" text="購入後の保管や相場の見方を解説" />
       </section>
