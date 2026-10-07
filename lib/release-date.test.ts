@@ -23,6 +23,27 @@ test("発売日はUTC・JST・米国時間でも前日にならない（全カ�
 test("不正な日付でページを落とさず未確認表示", () => {
   for (const value of ["", "2026-02-30", "2026-13-01", "2026-10-31T00:00:00Z"]) assert.equal(formatReleaseDate(value), "発売日未確認");
 });
+
+test("スペシャルBOXは抽選開始日ではなく公式商品詳細の発売日を使用", () => {
+  for (const [id, date] of [
+    ["pokemon-center-tohoku-special-box", "2025-06-20"],
+    ["pokemon-center-hiroshima-special-box", "2025-07-04"],
+    ["pokemon-center-fukuoka-special-box", "2025-07-11"],
+  ]) {
+    const product = officialCardCatalog.find((p) => p.id === id)!;
+    assert.equal(product.releaseDate, date);
+    const merged = mergeOfficialCardCatalog([{ ...product, releaseDate: "2025-06-13" }], "pokemon");
+    assert.equal(merged.find((p) => p.id === id)!.releaseDate, date);
+  }
+});
+
+test("全カタログの発売判定はJST午前0時で切り替わる", () => {
+  for (const product of officialCardCatalog) {
+    const midnight = new Date(`${product.releaseDate}T00:00:00+09:00`);
+    assert.equal(isReleasedInTokyo(product, new Date(midnight.getTime() - 1)), false, product.id);
+    assert.equal(isReleasedInTokyo(product, midnight), true, product.id);
+  }
+});
 test("EB05は公式10月31日を優先し10月4日の価格追跡に入らない", () => {
   const product = officialCardCatalog.find((p) => p.id === "onepiece-eb05")!;
   assert.equal(product.releaseDate, "2026-10-31");

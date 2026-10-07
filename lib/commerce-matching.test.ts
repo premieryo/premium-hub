@@ -57,6 +57,14 @@ for (const definition of [
 ] as const) {
   const product: Product = { ...dragonBallProduct, genre: definition.genre, searchWord: definition.query, seriesNumber: definition.series };
   const genuine = { ...sealedBox, name: `${definition.query} 新品未開封 シュリンク付き`, price: 13500 };
+  test(`${definition.genre}/${definition.query}: 実際に誤取得したローダー出品は採用しない`, () => {
+    const loader = { ...genuine,
+      name: "コレクター共同開発 ポケモンカード BOX ローダー 保管用ケース UVカット セミハード (デラックス)",
+      price: 1180, url: "https://store.shopping.yahoo.co.jp/horikku/2buuu1o801.html" };
+    assert.throws(() => validateCandidate(product, loader));
+    assert.equal(selectSafePriceCandidate(product, [loader]), undefined);
+    assert.equal(selectSafePriceCandidate(product, [loader, genuine]), genuine);
+  });
   for (const accessory of ["ローダー", "保管用", "保護ケース", "カードケース", "BOXケース", "UVカット", "空箱", "箱のみ", "アクリルケース", "マグネットケース", "ディスプレイケース", "収納ケース", "BOXプロテクター", "box protector", "storage case"]) {
     test(`${definition.genre}/${definition.query}: ${accessory}を除外し本物1BOXを選択`, () => {
       const fake = { ...genuine, name: `${definition.query} ${accessory} 未開封シュリンク付きBOX対応`, price: 1180 };
