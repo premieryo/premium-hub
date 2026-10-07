@@ -129,7 +129,11 @@ export function validateCandidate(product: Product, item: YahooItem) {
   const rejected = ["シュリンクなし", "シュリンク無し", "テープなし", "テープ無し", "テープカット",
     "開封済み", "訳あり", "ダメージあり", "カード単品", "シングルカード", "パック単品",
     "オリパ", "福袋", "中古", "カートン", "セット販売", "boxセット",
-    "ボックスセット", "まとめ売り"].find((word) => title.includes(normalize(word)));
+    "ボックスセット", "まとめ売り", "スリーブ", "ローダー", "ケース", "保管用品", "サプライ", "プレイマット", "デッキ", "開封品", "使用済み",
+    "box相当", "ボックス相当", "箱相当", "パックセット", "パックまとめ", "パックのみ"].find((word) => title.includes(normalize(word)));
+  // A sealed BOX may state its contents (e.g. 24パック入り). Loose pack
+  // quantities/sets are not evidence that the original BOX is unopened.
+  if (/\d+パック(?!入り|入|封入)/.test(title)) throw new Error("BOX封入数ではないパック数量を検出");
   const quantity = findMultipleItemExpression(item.name);
   if (/(?:バラ|単品)パック|(?<![0-9])1パック|ばら売り|バラ売り|パック販売|予約|ランダム|選べる|選択式|再シュリンク/.test(title)) throw new Error("単品パックまたは商品不確定の出品を検出");
   if (product.type !== "box") throw new Error("追跡対象がBOXではありません。");

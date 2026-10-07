@@ -65,7 +65,7 @@ for (const definition of [
     assert.equal(selectSafePriceCandidate(product, [loader]), undefined);
     assert.equal(selectSafePriceCandidate(product, [loader, genuine]), genuine);
   });
-  for (const accessory of ["ローダー", "保管用", "保護ケース", "カードケース", "BOXケース", "UVカット", "空箱", "箱のみ", "アクリルケース", "マグネットケース", "ディスプレイケース", "収納ケース", "BOXプロテクター", "box protector", "storage case"]) {
+  for (const accessory of ["ローダー", "保管用", "保護ケース", "カードケース", "BOXケース", "UVカット", "空箱", "箱のみ", "アクリルケース", "マグネットケース", "ディスプレイケース", "収納ケース", "BOXプロテクター", "box protector", "storage case", "スリーブ", "保管用品", "単品パック", "2パック", "30パックセット", "BOX相当30パック", "デッキ", "サプライ", "カートン", "2BOXセット", "中古", "開封済み"]) {
     test(`${definition.genre}/${definition.query}: ${accessory}を除外し本物1BOXを選択`, () => {
       const fake = { ...genuine, name: `${definition.query} ${accessory} 未開封シュリンク付きBOX対応`, price: 1180 };
       assert.throws(() => validateCandidate(product, fake));
@@ -73,4 +73,12 @@ for (const definition of [
       assert.equal(selectSafePriceCandidate(product, [fake]), undefined);
     });
   }
+}
+
+for (const name of ["ブラックボルト", "ホワイトフレア"]) {
+  test(`${name}: デラックス指定に通常版を採用しない`, () => {
+    const product: Product = { ...dragonBallProduct, genre: "pokemon", seriesNumber: undefined, searchWord: `${name} デラックス BOX` };
+    assert.throws(() => validateCandidate(product, { ...sealedBox, name: `${name} BOX 新品未開封` }));
+    assert.doesNotThrow(() => validateCandidate(product, { ...sealedBox, name: `${name} デラックス BOX 新品未開封` }));
+  });
 }

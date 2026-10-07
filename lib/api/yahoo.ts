@@ -28,6 +28,7 @@ export type YahooSearchOptions = {
   productType?: ProductType;
   timeoutMs?: number;
   purpose?: "price" | "image";
+  onEvaluated?: (candidates: { item: YahooItem; score: number }[]) => void;
 };
 
 export type YahooAffiliateConfig = {
@@ -162,8 +163,9 @@ export async function searchYahooItems(
     throw new Error("Yahoo! APIのレスポンス形式が不正です。");
   }
 
-  return data.hits
-    .map((item) => ({ item, score: scoreItem(item, query, productType, options.purpose ?? "price") }))
+  const evaluated = data.hits.map((item) => ({ item, score: scoreItem(item, query, productType, options.purpose ?? "price") }));
+  options.onEvaluated?.(evaluated);
+  return evaluated
     .filter(({ score }) => score >= 0)
     .sort((a, b) => b.score - a.score || a.item.price - b.item.price)
     .map(({ item }) => item);
