@@ -15,6 +15,10 @@ export function createProductImageAsset(product: Product, item: YahooItem, now =
     validateListingIdentity(product, item);
     if (item.condition !== "new" || findMultipleItemExpression(item.name)) return null;
     if (/空箱|箱のみ|オリパ|福袋|パック単品|バラパック|カード単品|シングルカード/.test(item.name)) return null;
+    // A BOX keyword does not turn loose packs into the matching BOX product.
+    // Explicit contents notation (e.g. 24パック入り) is safe; pack sale quantities are not.
+    if (product.type === "box" && /\d+\s*パック(?!\s*(?:入り|入|封入))/i.test(item.name.normalize("NFKC"))) return null;
+    if (/パックセット|パックまとめ|BOX相当|ボックス相当|箱相当|パッケージ傷み|要注意事項/.test(item.name)) return null;
     if (product.type === "box" && !/box|ボックス/i.test(item.name)) return null;
     const image = item.exImage;
     if (!image?.url) return null;
