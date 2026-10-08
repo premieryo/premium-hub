@@ -4,6 +4,9 @@ type ImageTarget = { id: string; product: string; productId?: string };
 const normalize = (value: string) => value.normalize("NFKC").toLowerCase().replace(/[\s「」『』【】\[\]]/g, "");
 
 export function resolveProductImage(item: ImageTarget, products: Product[]): ProductImageAsset | undefined {
+  // Some information rows point at a BOX ID while selling loose packs or
+  // advertising several products. A BOX photo would misrepresent that offer.
+  if (/パックセット|パックまとめ|BOX相当|ボックス相当|箱相当|[／/]/i.test(item.product)) return undefined;
   const explicitId = item.productId ?? item.id;
   const byId = products.find((product) => product.id === explicitId);
   if (byId) return byId.imageEnabled ? byId.imageAsset : undefined;
