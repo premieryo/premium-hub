@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import type { Product } from "@/data/types";
 import type { YahooItem } from "./api/yahoo";
-import { createProductImageAsset, selectImageAcquisitionProducts } from "./product-image-acquisition";
+import { createProductImageAsset, isReviewedImageCandidate, selectImageAcquisitionProducts } from "./product-image-acquisition";
 import { selectPriceTrackingProducts } from "./price-tracking";
 import { validateCandidate } from "@/scripts/updateGenrePrices";
 
@@ -10,6 +10,12 @@ const product: Product = { id: "upcoming", genre: "pokemon", type: "box", name: 
 const item: YahooItem = { name: "新商品 BOX 予約受付", price: 0, condition: "new", inStock: false,
   seller: { name: "shop" }, url: "https://ck.jp.ap.valuecommerce.com/servlet/referral?sid=123&pid=456&vc_url=https%3A%2F%2Fstore.shopping.yahoo.co.jp%2Fshop%2Fitem.html",
   exImage: { url: "https://item-shopping.c.yimg.jp/i/n/shop_item", width: 300, height: 300 } };
+test("画像保存は目視確認したURLの完全一致を必須にする", () => {
+  const asset = createProductImageAsset(product, item)!;
+  assert.equal(isReviewedImageCandidate(asset), false);
+  assert.equal(isReviewedImageCandidate(asset, `${asset.src}-other`), false);
+  assert.equal(isReviewedImageCandidate(asset, asset.src), true);
+});
 test("未発売・追跡無効・在庫なしでも画像のみ取得できる", () => {
   assert.deepEqual(selectImageAcquisitionProducts("pokemon", [product]), [product]);
   assert.deepEqual(selectPriceTrackingProducts("pokemon", [product]), []);

@@ -2,6 +2,12 @@ import type { Genre, Product, ProductImageAsset } from "@/data/types";
 import type { YahooItem } from "./api/yahoo";
 import { findMultipleItemExpression, validateListingIdentity } from "./commerce-matching";
 
+// A matching BOX title can still carry a single-pack photograph. Persist only
+// the exact image source that was visually reviewed, rather than a new search hit.
+export function isReviewedImageCandidate(asset: ProductImageAsset, reviewedSource?: string) {
+  return Boolean(reviewedSource && asset.src === reviewedSource);
+}
+
 // Images have no release-date, price-window or in-stock requirement.
 // Explicitly disabled images and other licensed providers remain untouched.
 export function selectImageAcquisitionProducts(genre: Genre, products: Product[]) {
