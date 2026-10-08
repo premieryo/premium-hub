@@ -11,6 +11,11 @@ test("商品IDで最新の画像を共有し価格を変更しない", () => {
   assert.equal("imageAsset" in item, false);
 });
 test("通常版とデラックスの部分一致では共有しない", () => assert.equal(resolveProductImage({ id: "lottery", product: "ブラックボルト デラックス BOX" }, [product]), undefined));
+test("出版社やBOXを省略した単一商品の情報も共有する", () => {
+  const dbProduct = { ...product, id: "fb11", genre: "dragonball" as const, name: "ブースターパック BRIGHTNESS OF HOPE", searchWord: "BRIGHTNESS OF HOPE FB11 BOX", seriesNumber: "FB11" };
+  assert.equal(resolveProductImage({ id: "lottery", product: "BRIGHTNESS OF HOPE [FB11]" }, [dbProduct]), product.imageAsset);
+  assert.equal(resolveProductImage({ id: "lottery", product: "BRIGHTNESS OF HOPE [FB12]" }, [dbProduct]), undefined);
+});
 test("不明な明示商品IDは名称で補完しない", () => assert.equal(resolveProductImage({ id: "lottery", productId: "unknown", product: product.name }, [product]), undefined));
 test("BOXのIDが付いていてもパックセット・複数商品にはBOX画像を使わない", () => {
   for (const name of ["ブラックボルト 20パックセット", "ブラックボルト／ホワイトフレア 抽選販売"])
