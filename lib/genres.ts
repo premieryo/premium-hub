@@ -1,3 +1,4 @@
+import { attachProductImages } from "./shared-product-images";
 import { genreConfigs } from "@/data/genre-config";
 import type { GenreData } from "@/data/genre-data";
 import {
@@ -136,9 +137,9 @@ export async function getGenreContext(value: string) {
     config: genreConfigs[value],
     data: {
       products: sortProductsByReleaseDate(products),
-      lottery,
-      restock,
-      ranking,
+      lottery: attachProductImages(lottery, products),
+      restock: attachProductImages(restock, products),
+      ranking: attachProductImages(ranking, products),
       priceHistory,
     } satisfies GenreData,
   };
