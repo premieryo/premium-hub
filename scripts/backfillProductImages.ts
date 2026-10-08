@@ -1,7 +1,8 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import type { Genre, Product } from "../data/types";
 import { searchYahooItems } from "../lib/api/yahoo";
-import { createProductImageAsset, selectImageAcquisitionProducts } from "../lib/product-image-acquisition";
+import { createProductImageAsset, isReviewedImageCandidate, selectImageAcquisitionProducts } from "../lib/product-image-acquisition";
+import { readFileSync } from "node:fs";
 
 const genres = ["pokemon", "onepiece", "dragonball"] as const satisfies readonly Genre[];
 const INTERVAL_MS = 1_100;
@@ -32,7 +33,7 @@ async function rows(client: SupabaseClient, genre: Genre) {
 
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-export async function backfillProductImages(options: { dryRun?: boolean; productIds?: string[] } = {}) {
+export async function backfillProductImages(options: { dryRun?: boolean; productIds?: string[]; reviewedImageSources?: Record<string, string> } = {}) {
   const dryRun = options.dryRun ?? true;
   const selectedIds = options.productIds ? new Set(options.productIds) : null;
   const client = adminClient();
@@ -54,6 +55,11 @@ export async function backfillProductImages(options: { dryRun?: boolean; product
         }
         const imageAsset = createProductImageAsset(product, selected)!;
         if (!dryRun) {
+          if (!isReviewedImageCandidate(imageAsset, options.reviewedImageSources?.[product.id])) {
+            results.push({ genre, productId: product.id, productName: product.name, status: "skipped", reason: "目視確認済みの画像URLとの一致なし" });
+            if (index < products.length - 1) await wait(INTERVAL_MS);
+            continue;
+          }
           const row = productRows.find((candidate) => candidate.item_id === product.id);
           if (!row) throw new Error("更新対象products行がありません。");
           const data: Product = {
@@ -92,7 +98,9 @@ export async function backfillProductImages(options: { dryRun?: boolean; product
 
 if (process.argv[1]?.includes("backfillProductImages")) {
   const apply = process.argv.includes("--apply");
-  backfillProductImages({ dryRun: !apply }).then((summary) => {
+  const reviewedFileIndex = process.argv.indexOf("--reviewed-images-file");
+  const reviewedImageSources = reviewedFileIndex >= 0 ? JSON.parse(readFileSync(process.argv[reviewedFileIndex + 1], "utf8")) as Record<string, string> : undefined;
+  backfillProductImages({ dryRun: !apply, reviewedImageSources }).then((summary) => {
     console.log(JSON.stringify(summary, null, 2));
     if (summary.failed > 0) process.exitCode = 1;
   });
