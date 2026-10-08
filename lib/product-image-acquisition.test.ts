@@ -29,3 +29,13 @@ for (const changes of [
 ]) {
   test(`画像の許可条件・商品一致を検証: ${JSON.stringify(changes)}`, () => assert.equal(createProductImageAsset(product, { ...item, ...changes }), null));
 }
+for (const genre of ["pokemon", "onepiece", "dragonball"] as const) {
+  for (const title of ["6パック 新商品 BOX 未開封", "5パック 新商品 BOX", "新商品 BOX 1パック", "新商品 BOX パックセット", "新商品 BOX パッケージ傷みあり"]) {
+    test(`${genre}画像取得はBOX表記付きの別数量・傷み出品を除外: ${title}`, () => {
+      assert.equal(createProductImageAsset({ ...product, genre }, { ...item, name: title }), null);
+    });
+  }
+  test(`${genre}画像取得はBOXの内容数表記を許可`, () => {
+    assert.ok(createProductImageAsset({ ...product, genre }, { ...item, name: "新商品 BOX 24パック入り 予約" }));
+  });
+}
