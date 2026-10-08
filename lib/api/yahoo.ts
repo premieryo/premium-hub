@@ -2,6 +2,7 @@ import { matchesCommerceQuery } from "../commerce-matching";
 import type { ProductType } from "@/data/types";
 
 export type YahooItem = {
+  headLine?: string | null;
   name: string;
   price: number;
   url: string;
