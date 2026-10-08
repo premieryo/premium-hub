@@ -57,6 +57,7 @@ export type Product = {
 };
 
 type InformationItem = {
+  imageAsset?: ProductImageAsset;
   id: string;
   genre: Genre;
   shop: string;
