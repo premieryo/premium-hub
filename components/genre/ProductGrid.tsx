@@ -13,7 +13,7 @@ export default function ProductGrid({ products }: { products: Product[] }) {
   return (
     <div className="grid gap-4 sm:grid-cols-2">
       {products.map((product) => (
-        <PublicProductCard key={product.id} product={product} />
+        <PublicProductCard key={`${product.genre}:${product.id}`} product={product} />
       ))}
     </div>
   );

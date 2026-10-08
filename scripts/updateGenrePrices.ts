@@ -3,7 +3,7 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import type { Genre, Product, RankingItem } from "../data/types";
 import { searchYahooItems, type YahooItem } from "../lib/api/yahoo";
 import { selectPriceTrackingProducts } from "../lib/price-tracking";
-import { evaluateProductIdentity, findMultipleItemExpression } from "../lib/commerce-matching";
+import { validateListingIdentity, findMultipleItemExpression } from "../lib/commerce-matching";
 import { PRICE_MIN_REMAINING_MS } from "../lib/price-rotation";
 
 const SOURCE = "yahoo";
@@ -124,38 +124,39 @@ function normalize(value: string) {
 
 export function validateCandidate(product: Product, item: YahooItem) {
   const title = normalize(item.name);
-  const core = normalize(product.searchWord).replace(/box|ボックス/g, "");
+  if (/予約/.test(item.headLine ?? "")) throw new Error("見出しに予約表記が残る出品を検出");
   const sealed = ["未開封", "シュリンク付き", "シュリンク付", "テープ付き", "テープ付"]
     .some((word) => title.includes(normalize(word)));
   const rejected = ["シュリンクなし", "シュリンク無し", "テープなし", "テープ無し", "テープカット",
-    "開封済み", "訳あり", "ダメージあり", "カード単品", "シングルカード", "パック単品",
-    "1パック", "オリパ", "福袋", "中古", "カートン", "セット販売", "boxセット",
-    "ボックスセット", "まとめ売り"].find((word) => title.includes(normalize(word)));
+    "開封済み", "訳あり", "ダメージあり", "要注意事項", "カード単品", "シングルカード", "パック単品",
+    "オリパ", "福袋", "中古", "カートン", "セット販売", "boxセット",
+    "ボックスセット", "まとめ売り", "スリーブ", "ローダー", "ケース", "保管用品", "サプライ", "プレイマット", "デッキ", "使用済み",
+    "box相当", "ボックス相当", "箱相当", "パックセット", "パックまとめ", "パックのみ"].find((word) => title.includes(normalize(word)));
+  // A sealed BOX may state its contents (e.g. 24パック入り). Loose pack
+  // quantities/sets are not evidence that the original BOX is unopened.
+  if (/(?<!未)開封品/.test(title)) throw new Error("開封品を検出");
+  if (/\d+パック(?!入り|入|封入)/.test(title)) throw new Error("BOX封入数ではないパック数量を検出");
   const quantity = findMultipleItemExpression(item.name);
-  const expectedSeries = product.seriesNumber?.normalize("NFKC").toLowerCase().replace(/-/g, "");
-  const titleSeries = [...item.name.normalize("NFKC").toLowerCase().matchAll(/\b(op|eb|prb|fb|sb|st)-?(\d{2})\b/g)]
-    .map((match) => ({ prefix: match[1], value: `${match[1]}${match[2]}` }));
-
+  if (/(?:バラ|単品)パック|(?<![0-9])1パック|ばら売り|バラ売り|パック販売|予約|ランダム|選べる|選択式|再シュリンク/.test(title)) throw new Error("単品パックまたは商品不確定の出品を検出");
   if (product.type !== "box") throw new Error("追跡対象がBOXではありません。");
-  if (!core || !title.includes(core)) throw new Error("対象商品名が一致しません。");
+  validateListingIdentity(product, item);
   if (!(title.includes("box") || title.includes("ボックス")) || !sealed) {
     throw new Error("未開封BOXの根拠が不足しています。");
   }
   if (rejected) throw new Error(`除外語を検出: ${rejected}`);
   if (quantity) throw new Error(`複数商品を検出: ${quantity}`);
-  if (expectedSeries && (product.genre === "onepiece" || product.genre === "dragonball")) {
-    const expectedPrefix = expectedSeries.match(/^[a-z]+/)?.[0];
-    if (!titleSeries.some((series) => series.value === expectedSeries)) throw new Error(`シリーズ番号${product.seriesNumber}の完全一致なし`);
-    if (titleSeries.some((series) => series.prefix === expectedPrefix && series.value !== expectedSeries)) {
-      throw new Error("異なるシリーズ番号を検出");
-    }
-  }
-  const identity = evaluateProductIdentity(product, item);
-  if (!identity.accepted) throw new Error(identity.reason);
   if (item.condition !== "new") throw new Error("新品ではありません。");
   if (!item.inStock) throw new Error("在庫切れです。");
   if (!Number.isInteger(item.price) || item.price <= 0) throw new Error("価格が不正です。");
   if (!item.seller?.name || !item.url.startsWith("https://")) throw new Error("ショップまたはURLが不正です。");
+}
+
+// Keep the API relevance order, but do not let an unsafe first hit hide valid boxes.
+export function selectSafePriceCandidate(product: Product, items: YahooItem[]) {
+  return items.find((item) => {
+    try { validateCandidate(product, item); return true; }
+    catch { return false; }
+  });
 }
 
 async function previousPrice(
@@ -181,20 +182,12 @@ function createPlan(genre: Genre, product: Product, old: RankingItem | undefined
     throw new Error(`異常価格ガード: 前回比${rate.toFixed(2)}%（許容±${MAX_CHANGE_RATE}%）`);
   }
   const fetchedAt = new Date().toISOString();
-  const image = selected.exImage;
-  const imageAsset = image?.url?.startsWith("https://item-shopping.c.yimg.jp/")
-    && selected.url.startsWith("https://ck.jp.ap.valuecommerce.com/")
-    && Number.isInteger(image.width) && (image.width ?? 0) > 0
-    && Number.isInteger(image.height) && (image.height ?? 0) > 0
-    ? { source: "valuecommerce" as const, src: image.url, clickUrl: selected.url, alt: selected.name, width: image.width!, height: image.height!, fetchedAt }
-    : undefined;
   const productData: Product = {
     ...product,
     marketPrice: selected.price,
     shop: selected.seller.name,
     url: selected.url,
     updatedAt: fetchedAt,
-    ...(imageAsset ? { imageSource: "valuecommerce" as const, imageAlt: selected.name, imageEnabled: true, imageAsset } : {}),
   };
   delete (productData as ProductWithLease)._priceUpdateLease;
   const rankingData: RankingItem = {
@@ -326,7 +319,7 @@ export async function updateGenrePrices(genre: Genre, options: PriceUpdateOption
         attemptedYahoo = true;
         let selected: YahooItem | undefined;
         try {
-          selected = (await searchYahooItems(product.searchWord, { productType: product.type, timeoutMs: TIMEOUT_MS }))[0];
+          selected = selectSafePriceCandidate(product, await searchYahooItems(product.searchWord, { productType: product.type, timeoutMs: TIMEOUT_MS }));
         } finally {
           yahooFetchMs = Date.now() - fetchStartedAt;
         }

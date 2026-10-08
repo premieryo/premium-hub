@@ -1,6 +1,8 @@
+import { matchesCommerceQuery } from "../commerce-matching";
 import type { ProductType } from "@/data/types";
 
 export type YahooItem = {
+  headLine?: string | null;
   name: string;
   price: number;
   url: string;
@@ -26,6 +28,8 @@ type YahooSearchResponse = {
 export type YahooSearchOptions = {
   productType?: ProductType;
   timeoutMs?: number;
+  purpose?: "price" | "image";
+  onEvaluated?: (candidates: { item: YahooItem; score: number }[]) => void;
 };
 
 export type YahooAffiliateConfig = {
@@ -52,24 +56,19 @@ function normalize(value: string) {
   return value.normalize("NFKC").toLowerCase().replace(/\s+/g, "");
 }
 
-function getCoreQuery(query: string) {
-  return normalize(query).replace(/box|ボックス|本体|新品|未開封/g, "");
-}
-
-function scoreItem(item: YahooItem, query: string, productType: ProductType) {
+function scoreItem(item: YahooItem, query: string, productType: ProductType, purpose: "price" | "image") {
   const name = normalize(item.name);
-  const coreQuery = getCoreQuery(query);
 
   if (excludedWords.some((word) => name.includes(normalize(word)))) return -1;
-  if (["1パック", "5パック", "10パック", "バラパック", "パック単品"].some((word) => name.includes(word))) return -1;
-  if (coreQuery && !name.includes(coreQuery)) return -1;
+  if (/(?<![0-9])1パック|(?:バラ|単品)パック|パック単品|ばら売り|バラ売り/.test(name)) return -1;
+  if (!matchesCommerceQuery(item.name, query)) return -1;
 
   let score = 0;
   if (name.includes(normalize(query))) score += 100;
 
   if (productType === "box") {
     if (!name.includes("box") && !name.includes("ボックス")) return -1;
-    if (openedBoxWords.some((word) => name.includes(normalize(word)))) return -1;
+    if (purpose === "price" && openedBoxWords.some((word) => name.includes(normalize(word)))) return -1;
     score += 50;
     if (name.includes("シュリンク") || name.includes("未開封")) score += 20;
   } else if (productType === "figure" || productType === "toy") {
@@ -127,9 +126,10 @@ export async function searchYahooItems(
     results: "50",
     sort: "-score",
     condition: "new",
-    in_stock: "true",
     image_size: "300",
   });
+
+  if (options.purpose !== "image") params.set("in_stock", "true");
 
   const url = buildYahooItemSearchUrl(params, {
     sid: process.env.VALUECOMMERCE_SID,
@@ -164,8 +164,9 @@ export async function searchYahooItems(
     throw new Error("Yahoo! APIのレスポンス形式が不正です。");
   }
 
-  return data.hits
-    .map((item) => ({ item, score: scoreItem(item, query, productType) }))
+  const evaluated = data.hits.map((item) => ({ item, score: scoreItem(item, query, productType, options.purpose ?? "price") }));
+  options.onEvaluated?.(evaluated);
+  return evaluated
     .filter(({ score }) => score >= 0)
     .sort((a, b) => b.score - a.score || a.item.price - b.item.price)
     .map(({ item }) => item);

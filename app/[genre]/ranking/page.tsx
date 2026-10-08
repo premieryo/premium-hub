@@ -14,6 +14,9 @@ export default async function Page({ params }: { params: Promise<{ genre: string
   const { genre } = await params;
   const context = await getGenreContext(genre);
   if (!context) notFound();
+  if (["beyblade", "figure"].includes(genre)) {
+    return <MarketRankingPage config={context.config} products={context.data.products} ranking={context.data.ranking} />;
+  }
   const products = productsInCategory(context.data.products, "booster-box");
   return <MarketRankingPage config={context.config} products={products} ranking={rankingInCategory(context.data.ranking, context.data.products, "booster-box")} category="booster-box" />;
 }
