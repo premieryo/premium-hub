@@ -22,6 +22,13 @@ test("collectionは公式JAN・型番なしならskip", () => assert.equal(evalu
 
 const dragonBallProduct: Product = { id: "fb01", name: "ブースターパック 覚醒の鼓動", genre: "dragonball", type: "box", productCategory: "booster-box", seriesNumber: "FB01", searchWord: "覚醒の鼓動 FB01 BOX", releaseDate: "2024-02-16" };
 const sealedBox: YahooItem = { name: "覚醒の鼓動 FB01 BOX 新品未開封 テープ付き", price: 5000, url: "https://example.com/fb01", inStock: true, condition: "new", seller: { name: "shop" } };
+test("未開封品と開封品を区別する", () => {
+  assert.doesNotThrow(() => validateCandidate(dragonBallProduct, { ...sealedBox, name: "覚醒の鼓動 FB01 BOX 新品未開封品 テープ付き" }));
+  assert.throws(() => validateCandidate(dragonBallProduct, { ...sealedBox, name: "覚醒の鼓動 FB01 BOX 開封品 テープ付き" }));
+});
+test("即納タイトルでも見出しが予約なら採用しない", () => {
+  assert.throws(() => validateCandidate(dragonBallProduct, { ...sealedBox, headLine: "BOX 予約" }));
+});
 test("シリーズ番号の完全一致を必須にする", () => assert.doesNotThrow(() => validateCandidate(dragonBallProduct, sealedBox)));
 test("FB01とFB10を誤一致しない", () => assert.throws(() => validateCandidate(dragonBallProduct, { ...sealedBox, name: "覚醒の鼓動 FB10 BOX 新品未開封 テープ付き" })));
 
