@@ -63,7 +63,8 @@ test("公式URLと任意日時がない場合はCTAと該当項目を表示し�
   assert.doesNotMatch(html, /応募開始/);
   assert.doesNotMatch(html, /当選発表/);
   assert.doesNotMatch(html, /販売・購入期間/);
-  assert.doesNotMatch(html, /応募方法/);
+  assert.match(html, /応募方法を確認する/);
+  assert.match(html, /公式応募ページのURLは確認中/);
   assert.doesNotMatch(html, /応募条件/);
   assert.doesNotMatch(html, /注意事項/);
 });
@@ -86,6 +87,7 @@ test("応募方法の全区分を日本語表示へ変換する", () => {
   assert.equal(formatApplicationType("online"), "オンライン");
   assert.equal(formatApplicationType("store"), "店頭");
   assert.equal(formatApplicationType("both"), "オンライン・店頭");
+  assert.equal(formatApplicationType("app"), "専用アプリ");
 });
 
 test("長文の応募条件と注意事項を省略せず表示する", () => {
@@ -96,4 +98,21 @@ test("長文の応募条件と注意事項を省略せず表示する", () => {
   assert.match(html, new RegExp(longCondition));
   assert.match(html, new RegExp(longNotes));
   assert.match(html, /whitespace-pre-wrap break-words/);
+});
+
+test("アプリ限定抽選はURLなしでも応募手順を表示する", () => {
+  const html = renderToStaticMarkup(createElement(LotteryCard, {
+    item: { ...item, applicationType: "app", officialUrl: undefined },
+  }));
+  assert.match(html, /専用アプリ/);
+  assert.match(html, /応募方法を確認する/);
+  assert.match(html, /アプリ内の抽選案内から応募してください/);
+});
+
+test("アプリの公式案内リンクは応募フォームと誤認させない", () => {
+  const html = renderToStaticMarkup(createElement(LotteryCard, {
+    item: { ...item, applicationType: "app" },
+  }));
+  assert.match(html, /公式の応募案内を確認する/);
+  assert.doesNotMatch(html, /公式サイトで応募する/);
 });
