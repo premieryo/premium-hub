@@ -57,6 +57,7 @@ export type Product = {
 };
 
 type InformationItem = {
+  imageAsset?: ProductImageAsset;
   id: string;
   genre: Genre;
   shop: string;
@@ -80,7 +81,7 @@ export type LotteryItem = InformationItem & {
   resultDate?: string;
   saleDate?: string;
   applicationConditions?: string;
-  applicationType?: "online" | "store" | "both";
+  applicationType?: "online" | "store" | "both" | "app";
   notes?: string;
   observedAt?: string;
 };

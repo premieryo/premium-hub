@@ -1,3 +1,4 @@
+import ProductImage from "@/components/product/ProductImage";
 import type { RestockItem } from "@/data/types";
 
 const tokyoDateTimeFormatter = new Intl.DateTimeFormat("ja-JP", {
@@ -28,6 +29,7 @@ export default function RestockCard({ item }: { item: RestockItem }) {
 
   return (
     <article className="rounded-2xl border border-white/10 bg-slate-900 p-4 sm:p-5">
+      <div className="mb-3"><ProductImage asset={item.imageAsset} alt={item.product} fallbackIcon="📦" className="h-20 w-20" /></div>
       <h2 className="break-words text-lg font-black text-white sm:text-xl">{item.product}</h2>
       <p className="mt-1 break-words text-sm text-slate-300">{item.shop}</p>
 

@@ -5,6 +5,7 @@ type ProductImageProps = {
   alt: string;
   fallbackIcon?: string;
   className?: string;
+  linked?: boolean;
 };
 
 type SourcePolicy = {
@@ -13,7 +14,7 @@ type SourcePolicy = {
 };
 
 // A provider is enabled only after its public terms and exact hostnames are verified.
-// ValueCommerce and other ASP hosts intentionally remain disabled until approval.
+// Only the verified providers below are enabled.
 const sourcePolicies: Partial<Record<ProductImageSource, SourcePolicy>> = {
   amazon: {
     imageHosts: new Set(["m.media-amazon.com"]),
@@ -55,8 +56,9 @@ export function isAllowedProductImageAsset(asset: ProductImageAsset) {
 export default function ProductImage({
   asset,
   alt,
-  fallbackIcon = "◇",
+  fallbackIcon = "📦",
   className = "h-16 w-16",
+  linked = true,
 }: ProductImageProps) {
   const sharedClassName = `${className} shrink-0 overflow-hidden rounded-xl border border-white/10 bg-gradient-to-br from-slate-800 to-blue-950`;
 
@@ -72,6 +74,12 @@ export default function ProductImage({
     );
   }
 
+  const image = (
+    // eslint-disable-next-line @next/next/no-img-element -- Provider assets bypass optimization and caching.
+    <img src={asset.src} alt={asset.alt || alt} width={asset.width} height={asset.height}
+      loading="lazy" decoding="async" className="h-full w-full object-contain" />
+  );
+  if (!linked) return <span className={`${sharedClassName} block`}>{image}</span>;
   return (
     <a
       href={asset.clickUrl}
@@ -80,16 +88,7 @@ export default function ProductImage({
       className={`${sharedClassName} block`}
       aria-label={`${asset.alt || alt}の商品ページを開く`}
     >
-      {/* eslint-disable-next-line @next/next/no-img-element -- Licensed provider images must bypass Next/Vercel optimization and caching. */}
-      <img
-        src={asset.src}
-        alt={asset.alt || alt}
-        width={asset.width}
-        height={asset.height}
-        loading="lazy"
-        decoding="async"
-        className="h-full w-full object-contain"
-      />
+      {image}
     </a>
   );
 }

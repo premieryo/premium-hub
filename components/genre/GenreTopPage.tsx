@@ -68,7 +68,7 @@ export default function GenreTopPage({ config, data }: { config: GenreConfig; da
             return (
               <ProductCard
                 key={item.id}
-                emoji={item.icon}
+                emoji="📦" image={item.imageAsset}
                 category={item.shop}
                 title={item.product}
                 price={`応募締切：${deadline}`}
