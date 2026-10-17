@@ -1,3 +1,4 @@
+import PresokuBackground from "@/components/PresokuBackground";
 import type { Metadata } from "next";
 import Link from "next/link";
 import AffiliateDisclosure from "@/components/AffiliateDisclosure";
@@ -18,11 +19,7 @@ const sections = [
 
 export default function GuidePage() {
   return <main className="relative min-h-screen overflow-hidden bg-[#050b18] text-white">
-    <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
-      <div className="absolute -right-24 top-28 h-[520px] w-[390px] rotate-[-8deg] rounded-[45%] bg-[radial-gradient(circle_at_45%_32%,rgba(96,165,250,.16),rgba(37,99,235,.07)_42%,transparent_70%)] blur-sm" />
-      <div className="absolute -right-10 top-44 select-none text-[190px] font-black leading-none text-blue-300/[.035] sm:text-[260px]">速</div>
-      <div className="absolute -left-24 bottom-0 h-72 w-72 rounded-full bg-blue-600/[.06] blur-3xl" />
-    </div>
+    <PresokuBackground />
 
     <div className="relative z-10 mx-auto max-w-4xl px-4 py-6 sm:px-6">
       <TopNavigation /><div className="mt-5"><AffiliateDisclosure /></div>

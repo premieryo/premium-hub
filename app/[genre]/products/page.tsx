@@ -14,6 +14,9 @@ export default async function Page({ params }: { params: Promise<{ genre: string
   const { genre } = await params;
   const context = await getGenreContext(genre);
   if (!context) notFound();
+  if (["beyblade", "figure"].includes(genre)) {
+    return <GenreProductsPage config={context.config} products={context.data.products} />;
+  }
   const products = splitBoosterProductsByRelease(
     context.data.products,
     ["pokemon", "onepiece", "dragonball"].includes(genre) ? 15 : Number.POSITIVE_INFINITY,

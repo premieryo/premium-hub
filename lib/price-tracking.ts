@@ -1,8 +1,10 @@
+import { officialCardCatalog } from "@/data/card-catalog";
 import type { Genre, Product } from "@/data/types";
 import { getProductCategory } from "./product-categories";
 
 const limitedGenres = new Set<Genre>(["pokemon", "onepiece", "dragonball"]);
 const CARD_GENRE_TRACKING_LIMIT = 10;
+const officialDates = new Map(officialCardCatalog.map((product) => [`${product.genre}:${product.id}`, product.releaseDate]));
 
 function getTokyoDateString(date: Date) {
   const parts = Object.fromEntries(
@@ -31,6 +33,9 @@ export function selectPriceTrackingProducts(
 ) {
   const genreProducts = products
     .filter((product) => product.genre === genre)
+    // Use the same verified calendar date as the public catalog. Preserve all
+    // mutable commerce fields and original DB rows for optimistic writes.
+    .map((product) => ({ ...product, releaseDate: officialDates.get(`${product.genre}:${product.id}`) ?? product.releaseDate }))
     .filter((product) => !limitedGenres.has(genre) || getProductCategory(product) === "booster-box")
     .filter((product) => isReleasedInTokyo(product, now))
     .sort((a, b) => b.releaseDate.localeCompare(a.releaseDate) || a.id.localeCompare(b.id));
