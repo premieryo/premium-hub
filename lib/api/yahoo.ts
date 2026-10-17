@@ -27,6 +27,7 @@ type YahooSearchResponse = {
 };
 
 export type YahooSearchOptions = {
+  janCode?: string;
   productType?: ProductType;
   timeoutMs?: number;
   purpose?: "price" | "image";
@@ -131,6 +132,7 @@ export async function searchYahooItems(
   });
 
   if (options.purpose !== "image") params.set("in_stock", "true");
+  if (options.janCode && /^\d{13}$/.test(options.janCode)) params.set("jan_code", options.janCode);
 
   const url = buildYahooItemSearchUrl(params, {
     sid: process.env.VALUECOMMERCE_SID,

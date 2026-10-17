@@ -323,7 +323,7 @@ export async function updateGenrePrices(genre: Genre, options: PriceUpdateOption
         attemptedYahoo = true;
         let selected: YahooItem | undefined;
         try {
-          selected = selectSafePriceCandidate(product, await searchYahooItems(product.searchWord, { productType: product.type, timeoutMs: TIMEOUT_MS }));
+          selected = selectSafePriceCandidate(product, await searchYahooItems(product.searchWord, { productType: product.type, timeoutMs: TIMEOUT_MS, janCode: product.jan }));
         } finally {
           yahooFetchMs = Date.now() - fetchStartedAt;
         }

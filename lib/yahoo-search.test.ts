@@ -13,10 +13,11 @@ for (const purpose of ["price", "image"] as const) {
         price: 5000, condition: "new", inStock: purpose === "price", url: "https://example.com/item", seller: { name: "shop" } }] });
     });
     try {
-      const items = await searchYahooItems("CROSS FORCE FB10 BOX", { purpose });
+      const items = await searchYahooItems("CROSS FORCE FB10 BOX", { purpose, janCode: "4582769965937" });
       assert.equal(items.length, 1);
       assert.equal(requested?.searchParams.get("in_stock"), purpose === "price" ? "true" : null);
       assert.equal(requested?.searchParams.get("condition"), "new");
+      assert.equal(requested?.searchParams.get("jan_code"), "4582769965937");
     } finally {
       if (previous === undefined) delete process.env.YAHOO_CLIENT_ID;
       else process.env.YAHOO_CLIENT_ID = previous;
