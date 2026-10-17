@@ -66,10 +66,14 @@ export function validateListingIdentity(product: Product, item: YahooItem) {
   if (product.jan && item.janCode && product.jan.replace(/\D/g, "") !== item.janCode.replace(/\D/g, "")) {
     throw new Error("JANコードが一致しません。");
   }
+  if (product.type === "box" && product.productCategory !== "collection-box" && product.jan
+    && !item.janCode && !item.name.includes(product.jan)) throw new Error("確認済みBOXのJANコードがありません。");
   const title = normalizeCommerceText(item.name);
   if (product.type === "box" && /ローダー|保管用|保護ケース|カードケース|boxケース|uvカット|空箱|箱のみ|アクリルケース|マグネットケース|ディスプレイケース|収納ケース|プロテクター|boxprotector|storagecase/.test(title)) throw new Error("BOX用保管用品・空箱を検出");
   if (/英語版|韓国語版|中国語版|海外版|english|korean|chinese/.test(title)) throw new Error("海外版を検出");
   if (product.genre === "pokemon" && product.productCategory !== "collection-box") {
+    const deluxe = (value: string) => /デラックス|deluxe|(?:^|[^a-z0-9])dx(?:$|[^a-z0-9])/i.test(value.normalize("NFKC"));
+    if (deluxe(item.name) !== deluxe(product.searchWord)) throw new Error("異なる商品仕様を検出");
     for (const variant of ["デラックス", "futuristic", "プレミアムデッキセット"]) {
       if (title.includes(variant) && !normalizeCommerceText(product.searchWord).includes(variant)) throw new Error("異なる商品仕様を検出");
     }

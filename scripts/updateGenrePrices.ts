@@ -124,6 +124,10 @@ function normalize(value: string) {
 
 export function validateCandidate(product: Product, item: YahooItem) {
   const title = normalize(item.name);
+  const details = normalize(`${item.headLine ?? ""} ${item.description ?? ""}`);
+  if (/シュリンク包装の破れ|シュリンクの破れ|シュリンク破れ|boxの破れ|box破れ|boxの破損/.test(details)) {
+    throw new Error("説明にシュリンク・BOX破損の許容条件を検出");
+  }
   if (/予約/.test(item.headLine ?? "")) throw new Error("見出しに予約表記が残る出品を検出");
   const sealed = ["未開封", "シュリンク付き", "シュリンク付", "テープ付き", "テープ付"]
     .some((word) => title.includes(normalize(word)));

@@ -3,6 +3,7 @@ import type { ProductType } from "@/data/types";
 
 export type YahooItem = {
   headLine?: string | null;
+  description?: string | null;
   name: string;
   price: number;
   url: string;
