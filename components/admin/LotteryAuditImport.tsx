@@ -6,6 +6,7 @@ import { genres } from "@/data/types";
 
 type Preview = { results: AuditResult[]; fingerprint: string };
 const empty: AuditInput = { genre: "pokemon", product: "", shop: "", applicationStart: "", deadlineAt: "", applicationType: "online", applicationConditions: "", officialUrl: "", applicationUrl: "", observedAt: "", evidence: "", evidenceKind: "official" };
+const deadlineFormat = new Intl.DateTimeFormat("ja-JP", { timeZone: "Asia/Tokyo", dateStyle: "short", timeStyle: "short" });
 const labels = { product: "商品名", shop: "販売店", applicationStart: "受付開始（JST・不明なら空欄）", deadlineAt: "締切（JST）", applicationConditions: "応募条件（条件なしの場合も公式確認の内容を入力）", officialUrl: "公式情報URL", applicationUrl: "応募URL（アプリは公式案内URL・店頭のみは空欄可）", observedAt: "確認日時（JST）", evidence: "確認根拠（公式の締切・応募方法・条件の要点）" };
 
 export default function LotteryAuditImport({ enabled, onSaved }: { enabled: boolean; onSaved: () => Promise<void> }) {
@@ -53,7 +54,7 @@ export default function LotteryAuditImport({ enabled, onSaved }: { enabled: bool
     <button type="button" disabled={busy || !queue.length} onClick={() => void run()} className="mt-3 min-h-12 w-full rounded-xl bg-blue-600 font-bold disabled:opacity-40">{busy ? "処理中…" : "保存前に検証・差分を確認"}</button>
     {message && <p role="status" className="mt-3 break-words rounded-xl bg-slate-800 p-3 text-sm text-amber-200">{message}</p>}
     {preview && <div className="mt-4 space-y-3">{preview.results.map(row => <article key={row.index} className="min-w-0 rounded-xl border border-slate-700 p-3">
-      <p className="text-xs font-bold text-blue-300">{row.priority} / {row.eligible ? "承認待ちに追加予定" : "登録対象外"}</p><h3 className="mt-1 break-words font-bold">{row.input.product || `入力${row.index + 1}`}</h3><p className="mt-1 break-words text-sm">{genreConfigs[row.input.genre]?.name ?? row.input.genre} / {row.input.shop} / 締切 {row.input.deadlineAt || "不明"}（入力値）</p>
+      <p className="text-xs font-bold text-blue-300">{row.priority} / {row.eligible ? "承認待ちに追加予定" : "登録対象外"}</p><h3 className="mt-1 break-words font-bold">{row.input.product || `入力${row.index + 1}`}</h3><p className="mt-1 break-words text-sm">{genreConfigs[row.input.genre]?.name ?? row.input.genre} / {row.input.shop} / 締切 {row.item?.deadlineAt ? `${deadlineFormat.format(new Date(String(row.item.deadlineAt)))} JST` : "未確認"}</p>
       {row.reasons.map(reason => <p key={reason} className="mt-2 break-words text-sm text-amber-200">{reason}</p>)}
       {row.matches.map(match => <div key={match.id} className="mt-2 break-words text-sm text-slate-300"><p>既存ID：{match.id} / {match.reason}</p><ul className="mt-1 space-y-1">{match.differences.map(diff => <li key={diff}>{diff}</li>)}</ul></div>)}
       {row.eligible && <><p className="mt-2 text-sm text-slate-300">既存情報の変更：なし → 新規の承認待ち1件。公式根拠・JST日時・応募条件を保存します。</p><details className="mt-2"><summary className="min-h-11 cursor-pointer py-2 text-sm">保存予定の全項目</summary><pre className="whitespace-pre-wrap break-all text-xs text-slate-300">{JSON.stringify(row.item, null, 2)}</pre></details><button type="button" disabled={busy || !enabled} onClick={() => void run(row.index)} className="mt-3 min-h-12 w-full rounded-xl bg-amber-600 px-3 font-bold disabled:opacity-40">この候補を承認待ちへ保存</button></>}
