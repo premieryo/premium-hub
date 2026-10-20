@@ -21,6 +21,7 @@ export function formatLotteryDateTime(value: string) {
 
 const applicationTypeLabels: Record<NonNullable<LotteryItem["applicationType"]>, string> = {
   online: "オンライン",
+  app: "アプリ応募（公式案内を確認）",
   store: "店頭",
   both: "オンライン・店頭",
 };
