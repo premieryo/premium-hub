@@ -163,7 +163,9 @@ export function selectSafePriceCandidate(product: Product, items: YahooItem[]) {
   });
 }
 
-async function previousPrice(
+// Only source=yahoo is eligible: yahoo-unverified preserves observations whose
+// original sale conditions cannot be established; yahoo-rejected is known bad.
+export async function previousPrice(
   client: SupabaseClient, genre: Genre, productId: string,
   ranking: RankingItem | undefined, fallback: number,
 ) {
