@@ -1,3 +1,4 @@
+import ProductImage from "@/components/product/ProductImage";
 import type { LotteryItem } from "@/data/types";
 import { getLotteryStatus, parseLotteryDateTime } from "@/lib/lottery-status";
 
@@ -23,6 +24,7 @@ const applicationTypeLabels: Record<NonNullable<LotteryItem["applicationType"]>,
   online: "オンライン",
   store: "店頭",
   both: "オンライン・店頭",
+  app: "専用アプリ",
 };
 
 export function formatApplicationType(value: NonNullable<LotteryItem["applicationType"]>) {
@@ -45,6 +47,7 @@ export default function LotteryCard({ item, now }: { item: LotteryItem; now?: Da
 
   return (
     <article className="rounded-2xl border border-white/10 bg-slate-900 p-4 sm:p-5">
+      <div className="mb-3"><ProductImage asset={item.imageAsset} alt={item.product} fallbackIcon="📦" className="h-20 w-20" /></div>
       <h2 className="break-words text-lg font-black text-white sm:text-xl">
         {item.product}
       </h2>
@@ -99,9 +102,24 @@ export default function LotteryCard({ item, now }: { item: LotteryItem; now?: Da
           rel="noopener noreferrer"
           className="mt-4 flex min-h-11 w-full items-center justify-center rounded-xl bg-blue-500 px-4 py-3 text-center text-sm font-bold text-white transition hover:bg-blue-400"
         >
-          公式サイトで応募する ↗
+          {item.applicationType === "app" ? "公式の応募案内を確認する ↗" : "公式サイトで応募する ↗"}
         </a>
-      ) : null}
+      ) : (
+        <section className="mt-4 rounded-xl border border-blue-400/30 bg-blue-400/10 p-3" aria-label="応募方法の案内">
+          <h3 className="text-sm font-bold text-blue-200">応募方法を確認する</h3>
+          <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-relaxed text-slate-100">
+            {item.applicationType === "app"
+              ? "専用アプリを開き、アプリ内の抽選案内から応募してください。"
+              : item.applicationType === "store"
+                ? "対象店舗の応募方法・受付場所を確認してください。"
+                : "公式応募ページのURLは確認中です。販売店の公式サイトや公式アプリで、該当商品の抽選案内をご確認ください。"}
+          </p>
+          {item.applicationConditions ? (
+            <p className="mt-2 text-sm leading-relaxed text-slate-200">応募条件：{item.applicationConditions}</p>
+          ) : null}
+          <p className="mt-2 text-xs text-slate-400">公式応募先の直接リンクは未確認です。案内が確認できない場合は、販売店の公式情報を優先してください。</p>
+        </section>
+      )}
     </article>
   );
 }

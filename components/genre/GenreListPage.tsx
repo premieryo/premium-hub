@@ -41,7 +41,7 @@ export default function GenreListPage({ config, data, kind }: { config: GenreCon
           const price = "currentPrice" in item && typeof item.currentPrice === "number"
             ? `現在 ${item.currentPrice.toLocaleString()}円 / 前回 ${(item.previousPrice ?? item.currentPrice).toLocaleString()}円`
             : "price" in item ? item.price : "";
-          return <ProductCard key={item.id} emoji={item.icon} category={item.shop} title={item.product}
+          return <ProductCard key={item.id} emoji="📦" image={item.imageAsset} category={item.shop} title={item.product}
             price={price} description={item.status} href={item.href} />;
         })}
       </section>
