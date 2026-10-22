@@ -1,3 +1,4 @@
+import PresokuBackground from "@/components/PresokuBackground";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import AffiliateDisclosure from "@/components/AffiliateDisclosure";
@@ -26,8 +27,9 @@ export default function GenrePageFrame({
   maxWidth = "5xl",
 }: GenrePageFrameProps) {
   return (
-    <main className="min-h-screen bg-slate-950 px-4 py-8 text-white">
-      <div className={maxWidth === "3xl" ? "mx-auto max-w-3xl" : "mx-auto max-w-5xl"}>
+    <main className="relative isolate min-h-screen bg-slate-950 px-4 py-8 text-white">
+      <PresokuBackground />
+      <div className={maxWidth === "3xl" ? "relative z-10 mx-auto max-w-3xl" : "relative z-10 mx-auto max-w-5xl"}>
         <TopNavigation fallbackHref={home ? "/" : `/${config.slug}`} />
         <div className="mt-5">
           <AffiliateDisclosure />

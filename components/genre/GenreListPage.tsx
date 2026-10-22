@@ -1,3 +1,4 @@
+import { rankingPricePresentation } from "@/lib/price-availability";
 import ProductCard from "@/components/ProductCard";
 import type { GenreConfig } from "@/data/genre-config";
 import type { GenreData } from "@/data/genre-data";
@@ -37,12 +38,10 @@ export default function GenreListPage({ config, data, kind }: { config: GenreCon
           data.lottery.map((item) => <LotteryCard key={item.id} item={item} />)
         ) : kind === "restock" ? (
           data.restock.map((item) => <RestockCard key={item.id} item={item} />)
-        ) : items.map((item) => {
-          const price = "currentPrice" in item && typeof item.currentPrice === "number"
-            ? `現在 ${item.currentPrice.toLocaleString()}円 / 前回 ${(item.previousPrice ?? item.currentPrice).toLocaleString()}円`
-            : "price" in item ? item.price : "";
+        ) : data.ranking.map((item) => {
+          const presentation = rankingPricePresentation(item);
           return <ProductCard key={item.id} emoji={item.icon} category={item.shop} title={item.product}
-            price={price} description={item.status} href={item.href} />;
+            price={presentation.price} description={presentation.description} href={item.href} />;
         })}
       </section>
     </GenrePageFrame>

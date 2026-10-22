@@ -1,8 +1,8 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-import type { Genre, Product, ProductImageAsset } from "../data/types";
+import type { Genre, Product } from "../data/types";
 import { searchYahooItems } from "../lib/api/yahoo";
-import { selectPriceTrackingProducts } from "../lib/price-tracking";
-import { validateCandidate } from "./updateGenrePrices";
+import { createProductImageAsset, isReviewedImageCandidate, selectImageAcquisitionProducts } from "../lib/product-image-acquisition";
+import { readFileSync } from "node:fs";
 
 const genres = ["pokemon", "onepiece", "dragonball"] as const satisfies readonly Genre[];
 const INTERVAL_MS = 1_100;
@@ -24,28 +24,6 @@ function adminClient() {
   return createClient(url, secret, { auth: { persistSession: false, autoRefreshToken: false } });
 }
 
-function createImageAsset(product: Product, item: Awaited<ReturnType<typeof searchYahooItems>>[number]) {
-  const image = item.exImage;
-  if (
-    !image?.url?.startsWith("https://item-shopping.c.yimg.jp/")
-    || !item.url.startsWith("https://ck.jp.ap.valuecommerce.com/")
-    || !Number.isInteger(image.width) || (image.width ?? 0) <= 0
-    || !Number.isInteger(image.height) || (image.height ?? 0) <= 0
-  ) return null;
-
-  const fetchedAt = new Date().toISOString();
-  const asset: ProductImageAsset = {
-    source: "valuecommerce",
-    src: image.url,
-    clickUrl: item.url,
-    alt: item.name || product.name,
-    width: image.width!,
-    height: image.height!,
-    fetchedAt,
-  };
-  return asset;
-}
-
 async function rows(client: SupabaseClient, genre: Genre) {
   const result = await client.from("content_items").select("item_id,data,updated_at")
     .eq("genre", genre).eq("resource", "products").order("item_id");
@@ -55,7 +33,7 @@ async function rows(client: SupabaseClient, genre: Genre) {
 
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-export async function backfillProductImages(options: { dryRun?: boolean; productIds?: string[] } = {}) {
+export async function backfillProductImages(options: { dryRun?: boolean; productIds?: string[]; reviewedImageSources?: Record<string, string> } = {}) {
   const dryRun = options.dryRun ?? true;
   const selectedIds = options.productIds ? new Set(options.productIds) : null;
   const client = adminClient();
@@ -63,26 +41,25 @@ export async function backfillProductImages(options: { dryRun?: boolean; product
 
   for (const genre of genres) {
     const productRows = await rows(client, genre);
-    const products = selectPriceTrackingProducts(genre, productRows.map((row) => row.data))
+    const products = selectImageAcquisitionProducts(genre, productRows.map((row) => row.data))
       .filter((product) => !selectedIds || selectedIds.has(product.id));
 
     for (const [index, product] of products.entries()) {
       try {
-        const items = await searchYahooItems(product.searchWord, { productType: product.type, timeoutMs: 10_000 });
-        const selected = items.find((item) => {
-          try {
-            validateCandidate(product, item);
-            return Boolean(createImageAsset(product, item));
-          } catch {
-            return false;
-          }
-        });
+        const items = await searchYahooItems(product.searchWord, { productType: product.type, timeoutMs: 10_000, purpose: "image" });
+        const selected = items.find((item) => createProductImageAsset(product, item));
         if (!selected) {
           results.push({ genre, productId: product.id, productName: product.name, status: "skipped", reason: "許可条件を満たす商品画像なし" });
+          if (index < products.length - 1) await wait(INTERVAL_MS);
           continue;
         }
-        const imageAsset = createImageAsset(product, selected)!;
+        const imageAsset = createProductImageAsset(product, selected)!;
         if (!dryRun) {
+          if (!isReviewedImageCandidate(imageAsset, options.reviewedImageSources?.[product.id])) {
+            results.push({ genre, productId: product.id, productName: product.name, status: "skipped", reason: "目視確認済みの画像URLとの一致なし" });
+            if (index < products.length - 1) await wait(INTERVAL_MS);
+            continue;
+          }
           const row = productRows.find((candidate) => candidate.item_id === product.id);
           if (!row) throw new Error("更新対象products行がありません。");
           const data: Product = {
@@ -94,9 +71,12 @@ export async function backfillProductImages(options: { dryRun?: boolean; product
           };
           const update = await client.from("content_items").update({ data, updated_at: new Date().toISOString() })
             .eq("genre", genre).eq("resource", "products").eq("item_id", product.id)
-            .eq("updated_at", row.updated_at).select("item_id");
+            .eq("updated_at", row.updated_at).select("item_id,data");
           if (update.error) throw new Error(`画像保存失敗: ${update.error.message}`);
           if (update.data?.length !== 1) throw new Error("商品が同時更新されたため画像保存を中止しました。");
+          const saved = await client.from("content_items").select("data").eq("genre", genre)
+            .eq("resource", "products").eq("item_id", product.id).single();
+          if (saved.error || saved.data?.data?.imageAsset?.src !== imageAsset.src) throw new Error("画像保存後のSELECT確認に失敗しました。");
         }
         results.push({ genre, productId: product.id, productName: product.name, status: "updated" });
       } catch (error) {
@@ -118,7 +98,9 @@ export async function backfillProductImages(options: { dryRun?: boolean; product
 
 if (process.argv[1]?.includes("backfillProductImages")) {
   const apply = process.argv.includes("--apply");
-  backfillProductImages({ dryRun: !apply }).then((summary) => {
+  const reviewedFileIndex = process.argv.indexOf("--reviewed-images-file");
+  const reviewedImageSources = reviewedFileIndex >= 0 ? JSON.parse(readFileSync(process.argv[reviewedFileIndex + 1], "utf8")) as Record<string, string> : undefined;
+  backfillProductImages({ dryRun: !apply, reviewedImageSources }).then((summary) => {
     console.log(JSON.stringify(summary, null, 2));
     if (summary.failed > 0) process.exitCode = 1;
   });

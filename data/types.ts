@@ -54,6 +54,8 @@ export type Product = {
   marketPrice?: number;
   url?: string;
   updatedAt?: string;
+  priceStockStatus?: "in-stock" | "out-of-stock" | "unknown";
+  priceStockCheckedAt?: string;
 };
 
 type InformationItem = {
@@ -102,6 +104,8 @@ export type RankingItem = InformationItem & {
   changeAmount?: number;
   changeRate?: number;
   updatedAt?: string;
+  priceStockStatus?: "in-stock" | "out-of-stock" | "unknown";
+  priceStockCheckedAt?: string;
   productCategory?: ProductCategory;
   retailPrice?: number;
 };
