@@ -15,5 +15,5 @@ export const metadata: Metadata = {
 export default async function AdminPage() {
   const { user, isAdmin } = await getAdminSession();
   if (!user || !isAdmin) return <AdminLogin unauthorized={Boolean(user)} />;
-  return <AdminDashboard />;
+  return <AdminDashboard auditImportEnabled={process.env.LOTTERY_AUDIT_IMPORT_ENABLED === "true"} />;
 }

@@ -12,7 +12,9 @@ import {
 } from "@/lib/admin-data";
 import { createClient } from "@/lib/supabase/client";
 
-export default function AdminDashboard() {
+import LotteryAuditImport from "./LotteryAuditImport";
+
+export default function AdminDashboard({ auditImportEnabled = false }: { auditImportEnabled?: boolean }) {
   const router = useRouter();
   const [genre, setGenre] = useState<Genre>("pokemon");
   const [resource, setResource] = useState<AdminResource>("products");
@@ -128,6 +130,8 @@ export default function AdminDashboard() {
           <span className="text-sm text-slate-400">{items.length}件</span>
         </div>
 
+        {resource === "lottery" && <LotteryAuditImport enabled={auditImportEnabled} onSaved={loadItems} />}
+
         <section className="mt-4 space-y-3">
           {loading ? <Status text="読み込み中..." /> : items.length === 0 ? <Status text="現在情報はありません" /> : items.map((item) => (
             <article key={item.id} className="rounded-2xl border border-slate-800 bg-slate-900 p-4">
@@ -135,7 +139,7 @@ export default function AdminDashboard() {
                 <p className="break-words text-xs text-slate-500">{item.id}</p>
                 {(resource === "lottery" || resource === "restock") && (
                   <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${item.publicationStatus === "pending" ? "bg-amber-500/20 text-amber-200" : item.publicationStatus === "rejected" ? "bg-slate-700 text-slate-300" : "bg-emerald-500/20 text-emerald-200"}`}>
-                    {item.publicationStatus === "pending" ? "自動取得候補" : item.publicationStatus === "rejected" ? "却下" : "公開中"}
+                    {item.publicationStatus === "pending" ? "承認待ち候補" : item.publicationStatus === "rejected" ? "却下" : "公開中"}
                   </span>
                 )}
               </div>
