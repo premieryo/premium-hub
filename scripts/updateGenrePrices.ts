@@ -194,6 +194,7 @@ function createPlan(genre: Genre, product: Product, old: RankingItem | undefined
     shop: selected.seller.name,
     url: selected.url,
     updatedAt: fetchedAt,
+    priceStockStatus: "in-stock", priceStockCheckedAt: fetchedAt,
   };
   delete (productData as ProductWithLease)._priceUpdateLease;
   const rankingData: RankingItem = {
@@ -202,6 +203,7 @@ function createPlan(genre: Genre, product: Product, old: RankingItem | undefined
     href: old?.href ?? `/${genre}/ranking`, price: `${selected.price.toLocaleString()}円`,
     marketPrice: selected.price, currentPrice: selected.price, previousPrice: previous,
     changeAmount: amount, changeRate: rate, updatedAt: fetchedAt,
+    priceStockStatus: "in-stock", priceStockCheckedAt: fetchedAt,
   };
   return { product, selected, fetchedAt, previousPrice: previous, changeAmount: amount, changeRate: rate, productData, rankingData };
 }
