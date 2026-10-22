@@ -7,7 +7,7 @@ import PublicProductCard from "../components/genre/PublicProductCard";
 import { AppRouterContext } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import MarketRankingPage from "../components/genre/MarketRankingPage";
 import { genreConfigs } from "../data/genre-config";
-import { officialCardCatalog } from "../data/card-catalog";
+import { mergeOfficialCardCatalog, officialCardCatalog } from "../data/card-catalog";
 import type { RankingItem } from "../data/types";
 const now = new Date("2026-10-22T03:00:00Z");
 const updatedAt = "2026-10-12T19:42:27.968Z";
@@ -56,4 +56,13 @@ test("相場ランキングは旧価格の定価比と前回比を隠し正常�
   assert.match(html, /最終取得価格/); assert.match(html, /10,980円/); assert.match(html, /比較対象外/);
   assert.doesNotMatch(html, /38.31|6,820|66.4/);
   assert.equal(ranking.previousPrice, 17800);
+});
+
+test("商品カタログ結合後も在庫確認の証拠と価格時刻を同時に保持する", () => {
+  const observation = { ...product, updatedAt: now.toISOString(), priceStockStatus: "in-stock" as const, priceStockCheckedAt: now.toISOString() };
+  const merged = mergeOfficialCardCatalog([observation], "dragonball").find(p => p.id === product.id)!;
+  assert.equal(merged.marketPrice, observation.marketPrice);
+  assert.equal(priceAvailability(merged, now).comparable, true);
+  const legacy = mergeOfficialCardCatalog([product], "dragonball").find(p => p.id === product.id)!;
+  assert.equal(priceAvailability(legacy, now).comparable, false);
 });

@@ -111,6 +111,8 @@ export function mergeOfficialCardCatalog(products: Product[], genre: Product["ge
       shop: existing.shop,
       url: existing.url,
       updatedAt: existing.updatedAt,
+      priceStockStatus: existing.priceStockStatus,
+      priceStockCheckedAt: existing.priceStockCheckedAt,
       affiliateUrl: existing.affiliateUrl,
       imageSource: existing.imageSource,
       imageSourceId: existing.imageSourceId,
