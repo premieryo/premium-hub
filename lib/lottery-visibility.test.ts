@@ -21,10 +21,11 @@ test("RLS: 承認待ち/却下は公開APIにも非公開、管理者だけ確�
       ('pokemon','lottery','approved','{"publicationStatus":"approved"}'),
       ('pokemon','lottery','legacy','{}'),
       ('pokemon','restock','restock-pending','{"publicationStatus":"pending"}'),
-      ('pokemon','products','product','{}');`);
+      ('pokemon','products','product','{}'),
+      ('pokemon','ranking','ranking','{}');`);
     for (const [role, uid] of [["anon", ""], ["authenticated", "00000000-0000-0000-0000-000000000002"]]) {
       await db.exec(`set role ${role}; select set_config('request.jwt.claim.sub','${uid}',false);`);
-      assert.deepEqual((await db.query<{ item_id: string }>("select item_id from content_items order by item_id")).rows.map(row => row.item_id), ["approved", "legacy", "product"]);
+      assert.deepEqual((await db.query<{ item_id: string }>("select item_id from content_items order by item_id")).rows.map(row => row.item_id), ["approved", "legacy", "product", "ranking"]);
       await assert.rejects(db.exec(`insert into content_items(genre,resource,item_id,data) values ('pokemon','lottery','unauthorized','{}')`));
       if (role === "authenticated") {
         assert.deepEqual((await db.query("update content_items set data='{}' where item_id='pending' returning item_id")).rows, []);
@@ -33,7 +34,7 @@ test("RLS: 承認待ち/却下は公開APIにも非公開、管理者だけ確�
       await db.exec("reset role;");
     }
     await db.exec(`set role authenticated; select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000001',false);`);
-    assert.equal((await db.query("select item_id from content_items")).rows.length, 6);
+    assert.equal((await db.query("select item_id from content_items")).rows.length, 7);
     await db.exec(`update content_items set data='{"publicationStatus":"approved"}' where item_id='pending'; reset role; set role anon;`);
     assert.equal((await db.query("select item_id from content_items where item_id='pending'")).rows.length, 1);
   } finally { await db.close(); }

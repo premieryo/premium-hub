@@ -1,3 +1,4 @@
+import LotteryApplicationLinks from "./LotteryApplicationLinks";
 import type { LotteryItem } from "@/data/types";
 import { getLotteryStatus, parseLotteryDateTime } from "@/lib/lottery-status";
 
@@ -93,16 +94,7 @@ export default function LotteryCard({ item, now }: { item: LotteryItem; now?: Da
         </section>
       ) : null}
 
-      {item.officialUrl ? (
-        <a
-          href={item.officialUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-4 flex min-h-11 w-full items-center justify-center rounded-xl bg-blue-500 px-4 py-3 text-center text-sm font-bold text-white transition hover:bg-blue-400"
-        >
-          公式サイトで応募する ↗
-        </a>
-      ) : null}
+      <LotteryApplicationLinks item={item} />
     </article>
   );
 }

@@ -28,7 +28,7 @@ test("抽選日時を日本時間で表示する", () => {
   assert.equal(formatLotteryDateTime(item.deadlineAt!), "9月5日 23:59");
 });
 
-test("抽選カードは既存項目と公式応募CTAを表示する", () => {
+test("抽選カードは既存項目と公式情報リンクを表示する", () => {
   const html = renderToStaticMarkup(createElement(LotteryCard, {
     item,
     now: new Date("2026-09-02T00:00:00.000Z"),
@@ -48,7 +48,8 @@ test("抽選カードは既存項目と公式応募CTAを表示する", () => {
   assert.match(html, /過去1年以内の購入履歴が必要/);
   assert.match(html, /注意事項/);
   assert.match(html, /1人1回まで/);
-  assert.match(html, /公式サイトで応募する ↗/);
+  assert.match(html, /公式情報・応募条件を確認 ↗/);
+  assert.doesNotMatch(html, /Web応募ページを開く/);
   assert.match(html, /target="_blank"/);
   assert.match(html, /rel="noopener noreferrer"/);
   assert.doesNotMatch(html, /表示用締切/);
