@@ -21,12 +21,23 @@ export function formatLotteryDateTime(value: string) {
 
 const applicationTypeLabels: Record<NonNullable<LotteryItem["applicationType"]>, string> = {
   online: "オンライン",
+  app: "アプリ",
   store: "店頭",
   both: "オンライン・店頭",
 };
 
 export function formatApplicationType(value: NonNullable<LotteryItem["applicationType"]>) {
   return applicationTypeLabels[value];
+}
+
+export function getFulfillmentBadge(item: LotteryItem): string | null {
+  if (item.fulfillmentType === "delivery") {
+    return item.fulfillmentRegion === "全国" ? "通販　全国" : item.fulfillmentRegion ? `通販　${item.fulfillmentRegion}` : null;
+  }
+  if (item.fulfillmentType === "store") {
+    return item.fulfillmentRegion ? `受取　${item.fulfillmentRegion}` : "受取　地域未確認";
+  }
+  return null;
 }
 
 function DateDetail({ label, value }: { label: string; value: string }) {
@@ -39,12 +50,14 @@ function DateDetail({ label, value }: { label: string; value: string }) {
 }
 
 export default function LotteryCard({ item, now }: { item: LotteryItem; now?: Date }) {
+  const fulfillmentBadge = getFulfillmentBadge(item);
   const deadline = item.deadlineAt
     ? `${formatLotteryDateTime(item.deadlineAt)}まで`
     : item.deadline;
 
   return (
     <article className="rounded-2xl border border-white/10 bg-slate-900 p-4 sm:p-5">
+      {fulfillmentBadge ? <span className="mb-3 inline-flex rounded-full border border-cyan-400/30 bg-cyan-400/10 px-3 py-1 text-xs font-bold text-cyan-200">{fulfillmentBadge}</span> : null}
       <h2 className="break-words text-lg font-black text-white sm:text-xl">
         {item.product}
       </h2>
