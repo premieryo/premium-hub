@@ -1,3 +1,4 @@
+import { formatReleaseDate } from "@/lib/release-date";
 import type { Product } from "@/data/types";
 import ProductImage from "@/components/product/ProductImage";
 import { isReleasedInTokyo } from "@/lib/price-tracking";
@@ -5,7 +6,7 @@ import { buildSnkrdunkSearchUrl, getSnkrdunkLinkLabel, SNKRDUNK_EXTERNAL_LINK_PR
 
 export default function PublicProductCard({ product }: { product: Product }) {
   const released = isReleasedInTokyo(product);
-  const releaseDate = new Intl.DateTimeFormat("ja-JP", { year: "numeric", month: "long", day: "numeric" }).format(new Date(`${product.releaseDate}T00:00:00+09:00`));
+  const releaseDate = formatReleaseDate(product.releaseDate);
   const priceMessage = !released ? "相場集計は発売後に開始予定" : product.priceTrackingEnabled ? "現在相場を確認中" : "相場集計前";
   const snkrdunkUrl = buildSnkrdunkSearchUrl(product);
   return <article className="flex h-full min-w-0 flex-col rounded-2xl border border-white/10 bg-slate-900 p-5">
