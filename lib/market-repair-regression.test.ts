@@ -31,3 +31,9 @@ for (const genre of ["pokemon", "onepiece", "dragonball"] as const) {
     assert.doesNotThrow(() => validateCandidate(product, { ...item, description: "新品未開封1BOX。外箱に軽微なスレや小傷がある場合があります。" }));
   });
 }
+
+for (const description of ["この商品は予約商品です。発売日以降発送。", "予約商品は発売日以降のお届けとなります。", "即納。在庫あり。予約商品です。", "<p>予約受付中</p>"]) {
+  test(`即納・在庫ありでも説明の予約条件は保留: ${description}`, () => {
+    assert.throws(() => validateCandidate(normal, { ...box, description }), /説明に予約/);
+  });
+}

@@ -89,3 +89,18 @@ for (const name of ["ブラックボルト", "ホワイトフレア"]) {
     assert.doesNotThrow(() => validateCandidate(product, { ...sealedBox, name: `${name} デラックス BOX 新品未開封` }));
   });
 }
+
+
+test("監査JAN状態は未設定・未確認・一致・不一致を区別する", async () => {
+  const { verifyListingJan } = await import("./commerce-matching");
+  const p = { id: "audit", name: "商品", genre: "pokemon", type: "box", searchWord: "商品 BOX", releaseDate: "2026-01-01", jan: "4521329427768" } as import("../data/types").Product;
+  const item = { name: "商品 BOX 新品未開封", price: 100, condition: "new", inStock: true, seller: {name:"店"}, url:"https://example.com/item" };
+  assert.equal(verifyListingJan({ ...p, jan: undefined }, { ...item, janCode: p.jan }), "not-configured");
+  assert.equal(verifyListingJan(p, item), "unverified");
+  assert.equal(verifyListingJan(p, { ...item, janCode: p.jan }), "matched");
+  assert.equal(verifyListingJan(p, { ...item, janCode: "4521329427300" }), "mismatched");
+  assert.equal(verifyListingJan(p, { ...item, name: `${item.name} ${p.jan}` }), "matched");
+  assert.equal(verifyListingJan(p, { ...item, name: `${item.name} 14521329427768` }), "unverified");
+  assert.equal(verifyListingJan(p, { ...item, janCode: "不明" }), "unverified");
+  assert.equal(verifyListingJan(p, { ...item, name: `${p.jan}`, janCode: "4521329427300" }), "mismatched");
+});

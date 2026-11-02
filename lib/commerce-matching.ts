@@ -81,3 +81,19 @@ export function validateListingIdentity(product: Product, item: YahooItem) {
   const identity = evaluateProductIdentity(product, item);
   if (!identity.accepted) throw new Error(identity.reason);
 }
+
+export type JanVerification = "not-configured" | "unverified" | "matched" | "mismatched";
+/** Report actual evidence, independently of the candidate's other checks. */
+export function verifyListingJan(product: Product, item: YahooItem): JanVerification {
+  const expected = product.jan?.trim();
+  if (!expected) return "not-configured";
+  if (!/^\d{13}$/.test(expected)) return "unverified";
+  const observed = item.janCode?.trim();
+  if (observed) {
+    if (!/^\d{13}$/.test(observed)) return "unverified";
+    return observed === expected ? "matched" : "mismatched";
+  }
+  const titleJans = item.name.match(/(?<!\d)\d{13}(?!\d)/g) ?? [];
+  if (titleJans.length === 1) return titleJans[0] === expected ? "matched" : "mismatched";
+  return "unverified";
+}

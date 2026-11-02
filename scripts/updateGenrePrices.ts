@@ -129,6 +129,9 @@ export function validateCandidate(product: Product, item: YahooItem) {
     throw new Error("説明にシュリンク・BOX破損の許容条件を検出");
   }
   if (/予約/.test(item.headLine ?? "")) throw new Error("見出しに予約表記が残る出品を検出");
+  // Description boilerplate can contradict an immediate-stock title.
+  // Do not infer that reservation wording is irrelevant to this listing.
+  if (/予約/.test(item.description ?? "")) throw new Error("説明に予約表記があり販売条件を確認できないため保留");
   const sealed = ["未開封", "シュリンク付き", "シュリンク付", "テープ付き", "テープ付"]
     .some((word) => title.includes(normalize(word)));
   const rejected = ["シュリンクなし", "シュリンク無し", "テープなし", "テープ無し", "テープカット",
