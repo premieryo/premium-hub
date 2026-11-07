@@ -80,7 +80,9 @@ export type LotteryItem = InformationItem & {
   resultDate?: string;
   saleDate?: string;
   applicationConditions?: string;
-  applicationType?: "online" | "store" | "both";
+  applicationType?: "online" | "app" | "store" | "both";
+  fulfillmentType?: "store" | "delivery";
+  fulfillmentRegion?: string;
   notes?: string;
   observedAt?: string;
 };
